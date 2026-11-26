@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Box Blast Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Mulish:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+/* VOICE: classroom game show on a projector, loud but tidy, readable from the back row
+   IDEA: the old PowerPoint "bomb" board: a wall of sealed numbered crates, one hides a bomb
+   PICTURE: the crate board itself, filling the screen; question cards drop over it
+   COLOUR and TYPE: Wellspring navy field, orange (Unit 2) as the hot accent, gold for multipliers, teal for points; Mulish titles, Calibri body
+   LAYOUT: header strip, scoreboard column + board; stacks on narrow screens */
+:root{color-scheme:dark;--navy:#002855;--deep:#001c3d;--ink:#fff;--muted:#9AA7B2;--orange:#F05023;--gold:#F5AA1E;--teal:#009682;--bteal:#006982;--panel:#0b3a6e;--line:#1f4f86;--card:#fff;--cardink:#26333F}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:radial-gradient(1200px 700px at 70% -10%,#0a4687 0%,var(--navy) 45%,var(--deep) 100%) fixed;color:var(--ink);font:17px/1.5 Calibri,Carlito,"Segoe UI",system-ui,sans-serif;min-height:100vh;overflow-x:clip}
+h1,h2,h3,.big{font-family:Mulish,Calibri,sans-serif;font-weight:900;line-height:1.08;margin:0}
+button{font:inherit;cursor:pointer;border:0;border-radius:10px;min-height:44px;padding:10px 18px;font-weight:700}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.btn{background:var(--orange);color:#fff}.btn:hover{filter:brightness(1.08)}
+.btn.alt{background:transparent;color:#fff;box-shadow:inset 0 0 0 2px #ffffff55}
+.btn.ok{background:var(--teal)}.btn.no{background:#7d2a2a}
+.btn:disabled{opacity:.4;cursor:default}
+.dots{display:inline-flex;gap:6px}.dots i{width:10px;height:10px;border-radius:50%;display:block}
+.dots i:nth-child(1){background:var(--orange)}.dots i:nth-child(2){background:var(--gold)}.dots i:nth-child(3){background:var(--teal)}
+/* setup */
+.setup{max-width:1040px;margin:0 auto;padding:clamp(20px,4vw,48px) max(4vw,16px)}
+.hero{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;margin-bottom:26px}
+.hero h1{font-size:clamp(40px,7vw,72px)}.hero h1 span{color:var(--orange)}
+.hero p{margin:8px 0 0;color:#CADCFC;max-width:46ch}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:18px}
+.box{background:#ffffff10;border:1px solid #ffffff22;border-radius:14px;padding:18px 20px}
+.box h3{font-size:19px;margin-bottom:12px}
+.seg{display:flex;flex-wrap:wrap;gap:8px}
+.seg button{background:#ffffff14;color:#fff;min-width:56px}
+.seg button[aria-pressed=true]{background:var(--orange)}
+.teams{display:grid;gap:8px;margin-top:12px}
+.teams label{display:flex;align-items:center;gap:10px}
+.teams .sw{width:16px;height:16px;border-radius:50%;flex:none}
+input[type=text],select{width:100%;font:inherit;font-size:16px;padding:10px 12px;border-radius:8px;border:1px solid #ffffff33;background:#00000033;color:#fff}
+select option{color:#000}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips label{display:flex;gap:6px;align-items:center;background:#ffffff14;padding:6px 12px;border-radius:99px;cursor:pointer;font-size:15px}
+.note{color:var(--muted);font-size:14px;margin:10px 0 0}
+.resume{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:18px;border-color:var(--orange);background:#F0502322}
+.start{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-top:22px}
+.start .btn{font-size:22px;padding:14px 34px}
+/* play */
+.top{display:flex;align-items:center;gap:14px;padding:12px max(2vw,14px);border-bottom:1px solid #ffffff1f;flex-wrap:wrap}
+.top .t{font-family:Mulish,sans-serif;font-weight:900;font-size:20px}.top .t span{color:var(--orange)}
+.top .meta{color:var(--muted);font-size:15px;margin-right:auto}
+.top button{min-height:38px;padding:6px 14px;font-size:15px}
+.play{display:grid;grid-template-columns:minmax(200px,270px) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);gap:clamp(10px,1.6vw,20px);padding:clamp(10px,1.6vw,20px);height:calc(100dvh - 63px)}
+.scores{display:grid;gap:10px;align-content:start;overflow:auto;padding:2px 8px 2px 2px}
+.team{border-radius:12px;padding:12px 16px;background:#ffffff10;border-left:6px solid var(--c);transition:transform .2s}
+.team.on{background:#ffffff22;transform:translateX(6px);box-shadow:0 0 0 2px var(--c)}
+.team .n{font-weight:700;font-size:17px;display:flex;justify-content:space-between}
+.team .s{font-family:Mulish,sans-serif;font-weight:900;font-size:clamp(30px,3.4vw,42px);line-height:1.1}
+.team .d{font-size:14px;color:var(--muted);min-height:20px}
+.banner{grid-column:1/-1;display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:#ffffff10;border-radius:12px;padding:12px 18px}
+.banner b{font-family:Mulish,sans-serif;font-size:clamp(20px,2.4vw,28px)}
+.banner .sp{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.board{display:grid;gap:clamp(6px,1vw,12px);grid-template-columns:repeat(var(--cols),minmax(0,1fr));grid-template-rows:repeat(var(--rows),minmax(0,1fr));height:100%}
+.crate{height:100%;border-radius:12px;position:relative;perspective:800px;padding:0;background:none;min-height:0}
+.crate .in{position:absolute;inset:0;transition:transform .55s;transform-style:preserve-3d}
+.crate.open .in{transform:rotateY(180deg)}
+.crate .f,.crate .b{position:absolute;inset:0;border-radius:12px;backface-visibility:hidden;display:grid;place-items:center;font-family:Mulish,sans-serif;font-weight:900}
+.crate .f{background:linear-gradient(160deg,#fff 0%,#dfe7ee 100%);color:var(--navy);font-size:clamp(22px,3.6vw,46px);box-shadow:0 5px 0 #8ea1b3,0 10px 18px #0006}
+.crate .f::after{content:"";position:absolute;inset:8px;border:2px dashed #00285522;border-radius:8px}
+.crate.pickable .f{animation:pulse 1.6s infinite}
+.crate.pickable:hover .f{background:linear-gradient(160deg,#fff3e6,#ffd8c4);transform:translateY(-3px)}
+.crate:disabled{cursor:default;opacity:1}
+.crate .b{transform:rotateY(180deg);color:#fff;font-size:clamp(12px,1.7vw,22px);text-align:center;padding:4px;line-height:1.05}
+.crate .b small{display:block;font:700 clamp(10px,1.1vw,14px) Calibri,Carlito,sans-serif;opacity:.85;margin-top:3px}
+.k-gain{background:var(--teal)}.k-jack{background:linear-gradient(135deg,var(--gold),var(--orange))}.k-party{background:#8a3ec9}.k-gamble{background:#3d3d8f}.k-shield{background:#4f7fae}.k-extra{background:#1f8a4c}.k-mystery{background:#555}
+.team .sh{font-size:12px;background:#4f7fae;border-radius:99px;padding:1px 8px;align-self:center}.k-mult{background:var(--gold);color:var(--navy)!important}.fx .big .k-mult{color:var(--navy)}.k-bomb{background:#1b1b1b}.k-loss{background:var(--orange)}.k-half{background:#b4421f}.k-swap,.k-steal,.k-gift{background:var(--bteal)}
+@keyframes pulse{50%{box-shadow:0 5px 0 #8ea1b3,0 0 0 4px var(--orange),0 10px 18px #0006}}
+/* overlay */
+.ov{position:fixed;inset:0;background:#000a;display:grid;place-items:center;padding:16px;z-index:5;animation:fade .2s}
+.card{background:var(--card);color:var(--cardink);border-radius:18px;width:min(980px,100%);max-height:94vh;overflow:auto;padding:clamp(20px,3vw,40px);box-shadow:0 20px 60px #000a;border-top:10px solid var(--c,var(--orange))}
+.card .who{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-weight:700;color:var(--bteal);font-size:16px}
+.tag{background:#EEF3F6;border-radius:99px;padding:3px 12px;font-size:14px;color:var(--cardink)}
+.card h2{color:var(--navy);font-size:clamp(24px,3.2vw,40px);margin:14px 0 20px;text-wrap:balance}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:12px}
+.opt{display:flex;gap:14px;align-items:center;text-align:left;background:#EEF3F6;color:var(--cardink);font-size:clamp(17px,1.9vw,22px);font-weight:600;padding:14px 16px;border:2px solid transparent}
+.opt b{flex:none;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--navy);color:#fff;font-family:Mulish,sans-serif}
+.opt:hover:not(:disabled){border-color:var(--orange)}
+.opt.right{background:#d5f0eb;border-color:var(--teal)}.opt.right b{background:var(--teal)}
+.opt.wrong{background:#fde2d9;border-color:var(--orange)}.opt.wrong b{background:var(--orange)}
+.opt.dim{opacity:.45}
+.opt:disabled{cursor:default}
+.ex{margin-top:18px;padding:14px 18px;border-radius:10px;background:#EEF3F6;border-left:6px solid var(--teal);font-size:18px}
+.ex.bad{border-color:var(--orange)}
+.ex strong{font-family:Mulish,sans-serif}
+.model{white-space:pre-line;font-size:clamp(17px,1.9vw,21px)}
+.acts{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px;justify-content:flex-end}
+.acts .l{margin-right:auto}
+.card .btn.alt{color:var(--navy);box-shadow:inset 0 0 0 2px #00285533}
+.timer{font-family:Mulish,sans-serif;font-weight:900;font-size:22px;color:var(--navy);min-width:60px;text-align:right}
+.timer.low{color:var(--orange)}
+.fx{text-align:center}
+.fx .big{font-size:clamp(44px,8vw,110px);margin:6px 0}
+.fx .big span{display:inline-block;border-radius:18px;padding:6px 32px;color:#fff}
+.fx p{font-size:clamp(18px,2.2vw,24px);margin:8px 0}
+.boom{animation:shake .5s}
+@keyframes shake{20%{transform:translate(-12px,4px) rotate(-2deg)}40%{transform:translate(10px,-6px) rotate(2deg)}60%{transform:translate(-8px,2px)}80%{transform:translate(6px,-2px)}}
+@keyframes fade{from{opacity:0}}
+.rules{padding:clamp(18px,2.4vw,32px)}.rules .acts{margin-top:12px}.rules h2{margin:0 0 10px}
+.steps{list-style:none;padding:0;margin:0 0 14px;display:grid;gap:6px}
+.steps li{display:flex;gap:12px;align-items:center;font-size:clamp(16px,1.6vw,20px)}
+.steps b{flex:none;width:32px;height:32px;border-radius:50%;background:var(--orange);color:#fff;display:grid;place-items:center;font-family:Mulish,sans-serif}
+.legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:14px}
+.legend>div{background:#EEF3F6;border-radius:12px;padding:12px 14px}
+.legend h3{font-size:18px;color:var(--navy);margin-bottom:8px}
+.legend ul{list-style:none;padding:0;margin:0;display:grid;gap:4px;font-size:14px;line-height:1.3}
+.legend li{display:flex;gap:8px;align-items:center}
+.legend span{flex:none;color:#fff;font:800 13px Mulish,sans-serif;border-radius:6px;padding:3px 8px;min-width:58px;text-align:center}
+.legend .pts{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
+.guide{margin-top:18px}.guide summary{cursor:pointer;font:800 18px Mulish,sans-serif;min-height:44px;display:flex;align-items:center}
+.guide ol,.guide ul{margin:6px 0;padding-left:22px}.guide li{margin:4px 0}.guide kbd{background:#ffffff22;border-radius:4px;padding:1px 6px;font-family:inherit}
+.pick{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:14px}
+.pick button{background:#EEF3F6;color:var(--cardink);border-left:6px solid var(--c);text-align:left}
+.pick button span{display:block;font-family:Mulish,sans-serif;font-weight:900;font-size:24px}
+/* end */
+.end{max-width:900px;margin:0 auto;padding:clamp(24px,5vw,60px) 16px;text-align:center}
+.end h1{font-size:clamp(40px,7vw,76px)}.end h1 span{color:var(--gold)}
+.podium{display:grid;gap:10px;margin:30px 0;text-align:left}
+.podium div{display:flex;align-items:center;gap:16px;background:#ffffff12;border-radius:12px;padding:14px 20px;border-left:8px solid var(--c)}
+.podium .r{font-family:Mulish,sans-serif;font-weight:900;font-size:30px;width:44px}
+.podium .nm{font-size:22px;font-weight:700;margin-right:auto}
+.podium .sc{font-family:Mulish,sans-serif;font-weight:900;font-size:34px}
+.podium div:first-child{background:#F5AA1E33}
+.foot{color:var(--muted);font-size:13px;text-align:center;padding:18px;display:flex;justify-content:center;gap:12px;align-items:center}
+textarea{width:100%;min-height:140px;font:14px/1.4 ui-monospace,Consolas,monospace;border-radius:8px;padding:10px;background:#00000033;color:#fff;border:1px solid #ffffff33}
+@media(max-width:820px),(max-height:520px){.play{grid-template-columns:1fr;grid-template-rows:none;height:auto}.board{height:auto;grid-template-rows:none}.crate{aspect-ratio:4/3;height:auto}.scores{grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}.team.on{transform:none}.team .s{font-size:28px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<!-- Question packs are listed in packs/manifest.js -->
+<script>
+/* Box Blast question pack: GSS Unit 2, Population and Settlement (Grade 9).
+   Built from the Unit 2 lessons, Waygrounds 1-3, Review 1 and the Essay 2 evidence bank.
+   Checked against the Semester 1 exam so no game question repeats an exam item.
+
+   Question formats
+   - Multiple choice: { topic, q, o: [4 options], a: index of correct option (0-3), e: explanation }
+   - Open (teacher judges): { topic, type: "open", q, model: model answer }
+*/
+window.BOX_BLAST_PACKS = window.BOX_BLAST_PACKS || [];
+window.BOX_BLAST_PACKS.push({
+  id: "gss-u2",
+  subject: "GSS (Grade 9)",
+  title: "GSS Unit 2: Population and Settlement",
+  subtitle: "Grade 9 · Semester 1 exam review",
+  questions: [
+    // ---------- Key terms ----------
+    { topic: "Key terms", q: "What does the death rate measure?", o: ["The number of deaths per 1,000 people in a year", "The number of people aged over 65", "The number of babies who die before their first birthday", "The number of people who leave a country"], a: 0, e: "Death rate is the number of deaths per 1,000 people per year. Remember both 'per 1,000' and 'per year'." },
+    { topic: "Key terms", q: "What does infant mortality measure?", o: ["Deaths of people over 80", "Babies who die before their first birthday, per 1,000 live births", "The number of babies born per year", "Children who leave school early"], a: 1, e: "Infant mortality counts deaths before age 1 per 1,000 live births. High infant mortality often means families have more children." },
+    { topic: "Key terms", q: "What is life expectancy?", o: ["The age you can retire", "The oldest person in a country", "The average number of years a person can expect to live", "The number of years a family lives in one house"], a: 2, e: "Life expectancy is the average number of years a person born today can expect to live. The UK's is about 81." },
+    { topic: "Key terms", q: "Someone who LEAVES their country to live somewhere else is an...", o: ["Immigrant", "Emigrant", "Refugee camp", "Dependent"], a: 1, e: "Emigrant = Exits. Immigrant = comes In." },
+    { topic: "Key terms", q: "How do you work out net migration?", o: ["Births minus deaths", "Immigrants minus emigrants", "Emigrants plus immigrants", "Population divided by area"], a: 1, e: "Net migration is the number of people arriving minus the number leaving." },
+    { topic: "Key terms", q: "What is population density?", o: ["The number of people per square kilometer", "The number of babies per family", "How fast a population grows", "The number of people in the capital city"], a: 0, e: "Density = people ÷ area. Australia has about 3 people per km²." },
+    { topic: "Key terms", q: "What is a refugee?", o: ["Someone who moves for a better-paid job", "A tourist visiting another country", "Someone forced to leave their country because of war, persecution or disaster", "Someone who moves from a village to a city"], a: 2, e: "Refugees are forced migrants. Syrians fleeing the civil war are refugees." },
+    { topic: "Key terms", q: "A country with the right number of people to give the highest living standards has...", o: ["An optimum population", "An ageing population", "Overpopulation", "Natural decrease"], a: 0, e: "Optimum population is the size that gives the highest average living standards." },
+    { topic: "Key terms", q: "What does 'brain drain' mean?", o: ["Students forgetting work over the holidays", "Skilled and educated people leaving their country", "Money sent home by migrants", "People moving from cities to villages"], a: 1, e: "Brain drain is a loss for the country of origin, such as Mexico losing young, skilled adults." },
+    { topic: "Key terms", q: "What is underpopulation?", o: ["Too many people for the resources", "A population that is falling", "Too few people to use the resources fully", "A country with no cities"], a: 2, e: "Underpopulated countries, like Australia, could support more people with their resources." },
+    { topic: "Key terms", q: "What is an ageing population?", o: ["A rising share of people aged 65 and over", "A population with many babies", "A population with a high death rate", "A country where people retire early"], a: 0, e: "Japan is the classic example: 27% are 65 or over and only 13% are under 15." },
+    { topic: "Key terms", q: "The working-age population is people aged...", o: ["0 to 14", "18 to 60", "15 to 64", "65 and over"], a: 2, e: "15 to 64 is working age. 0 to 14 and 65+ are the dependents." },
+
+    // ---------- Calculations ----------
+    { topic: "Calculations", q: "Birth rate 41 per 1,000, death rate 11 per 1,000. What is the natural increase as a percentage?", o: ["30%", "3.0%", "0.3%", "5.2%"], a: 1, e: "41 − 11 = 30 per 1,000. Divide by 10: 3.0%." },
+    { topic: "Calculations", q: "Birth rate 18 per 1,000, death rate 8 per 1,000. What is the natural increase as a percentage?", o: ["10%", "1.0%", "0.1%", "2.6%"], a: 1, e: "18 − 8 = 10 per 1,000, which is 1.0%." },
+    { topic: "Calculations", q: "Birth rate 7 per 1,000, death rate 12 per 1,000. What is the natural increase?", o: ["0.5%", "5%", "−0.5%", "−5%"], a: 2, e: "7 − 12 = −5 per 1,000, which is −0.5%. Negative means the population is falling (natural decrease)." },
+    { topic: "Calculations", q: "Natural increase is 27 per 1,000. What is this as a percentage?", o: ["27%", "0.27%", "2.7%", "270%"], a: 2, e: "Per 1,000 to percent: divide by 10. 27 ÷ 10 = 2.7%." },
+    { topic: "Calculations", q: "35% of people are aged 0 to 14 and 5% are 65 and over. What is the dependency ratio?", o: ["40", "60", "67", "150"], a: 2, e: "Working age = 100 − 40 = 60. 40 ÷ 60 × 100 = 66.7, so about 67." },
+    { topic: "Calculations", q: "20% are aged 0 to 14 and 30% are 65 and over. What is the dependency ratio?", o: ["50", "100", "150", "30"], a: 1, e: "Dependents = 50%, working age = 50%. 50 ÷ 50 × 100 = 100: one dependent for every worker." },
+    { topic: "Calculations", type: "open", q: "Birth rate 38 per 1,000, death rate 14 per 1,000. Calculate the natural increase as a percentage. Show your working.", model: "38 − 14 = 24 per 1,000.  24 ÷ 10 = 2.4%." },
+    { topic: "Calculations", type: "open", q: "30% of people are aged 0 to 14 and 6% are 65 and over. Calculate the dependency ratio. Show your working.", model: "Dependents = 30 + 6 = 36%.  Working age = 100 − 36 = 64%.  36 ÷ 64 × 100 = 56.25, so about 56." },
+
+    // ---------- DTM ----------
+    { topic: "DTM", q: "What is Stage 1 of the Demographic Transition Model called?", o: ["Low stationary", "High fluctuating", "Late expanding", "Natural decrease"], a: 1, e: "Stage 1: high birth rate, high death rate that goes up and down, so the population stays small." },
+    { topic: "DTM", q: "Why does the birth rate fall in Stage 3?", o: ["More wars", "Contraception, and more women in education and work", "Food runs out", "The death rate rises"], a: 1, e: "In Stage 3 families choose to have fewer children, so the birth rate falls quickly." },
+    { topic: "DTM", q: "In which stage is natural increase usually the highest?", o: ["Stage 1", "Stage 2", "Stage 4", "Stage 5"], a: 1, e: "In Stage 2 the death rate falls but the birth rate stays high, so the gap (natural increase) is biggest." },
+    { topic: "DTM", q: "Niger: birth rate 49, death rate 9 per 1,000. Which stage is it in?", o: ["Stage 1", "Stage 2", "Stage 4", "Stage 5"], a: 1, e: "High birth rate with a low death rate is Stage 2 (early expanding)." },
+    { topic: "DTM", q: "A country has a birth rate of 13 and a death rate of 12 per 1,000. Which stage is it most likely in?", o: ["Stage 1", "Stage 2", "Stage 3", "Stage 4"], a: 3, e: "Both rates are low and close together: Stage 4 (low stationary)." },
+    { topic: "DTM", q: "Why does the birth rate stay high in Stage 2?", o: ["Families need children to work on farms and many babies still die", "Everyone lives in cities", "The government pays people to have children", "People live to 90"], a: 0, e: "Children help on farms, contraception is limited and infant mortality is still high." },
+    { topic: "DTM", q: "What is Stage 5 also called?", o: ["Early expanding", "High fluctuating", "Natural decrease", "Late expanding"], a: 2, e: "In Stage 5 the birth rate is lower than the death rate, so the population falls. Japan is the example." },
+
+    // ---------- Pyramids & dependency ----------
+    { topic: "Pyramids & dependency", q: "Which part of a population pyramid shows the oldest people?", o: ["The base", "The middle", "The top", "The left side"], a: 2, e: "Age goes up the pyramid: young at the base, old at the top." },
+    { topic: "Pyramids & dependency", q: "A pyramid is narrow at the base and wide at the top. What does it show?", o: ["A young population", "An ageing population", "A high birth rate", "Many migrants arriving"], a: 1, e: "Few births and many older people: an ageing population, like Japan." },
+    { topic: "Pyramids & dependency", q: "A pyramid has almost straight, vertical sides. What does this show?", o: ["High birth and death rates", "A low birth rate and a low death rate", "A war has just happened", "A very young population"], a: 1, e: "Each age group is a similar size because few babies are born and most people live to old age (Stage 4)." },
+    { topic: "Pyramids & dependency", q: "Which shape would you expect for Niger's population pyramid?", o: ["Very wide base, narrow top", "Narrow base, wide top", "Straight sides", "Wide in the middle only"], a: 0, e: "About half of Niger's people are under 15, so the base is very wide." },
+    { topic: "Pyramids & dependency", q: "Which group pays most of the taxes that support dependents?", o: ["People aged 0 to 14", "People aged 15 to 64", "People aged 65 and over", "Refugees"], a: 1, e: "The working-age population supports both young and elderly dependents." },
+    { topic: "Pyramids & dependency", q: "A country has a very young population. What will it most need to spend more on?", o: ["Pensions", "Care homes", "Schools and childcare", "Hearing aids"], a: 2, e: "Many young dependents means pressure on schools, health care for children, and later on jobs." },
+    { topic: "Pyramids & dependency", q: "Japan has an ageing population. Which costs rise most?", o: ["Schools", "Pensions and health care", "Toys", "Maternity hospitals"], a: 1, e: "More elderly people means more pensions and more health care, paid by fewer workers." },
+    { topic: "Pyramids & dependency", type: "open", q: "Explain one problem an ageing population causes for a country. Use PEE.", model: "P: An ageing population puts pressure on government spending.\nE: In Japan 27% of people are 65 or over, but only 13% are under 15.\nE: This means fewer workers pay taxes, because the working-age group is shrinking, while more money is needed for pensions and health care." },
+
+    // ---------- China ----------
+    { topic: "China", q: "In which year did China introduce the one-child policy?", o: ["1949", "1969", "1979", "2016"], a: 2, e: "The policy began in 1979 to slow population growth." },
+    { topic: "China", q: "Before the policy, China's birth rate peaked at about...", o: ["12 per 1,000", "25 per 1,000", "45 per 1,000", "100 per 1,000"], a: 2, e: "About 45 per 1,000 in the early 1970s. By 2016 it was 12 per 1,000." },
+    { topic: "China", q: "Why did many Chinese families prefer to have a son?", o: ["Sons were traditionally expected to look after their parents in old age", "Boys were cheaper to feed", "The government paid more for sons", "Girls could not go to school"], a: 0, e: "This preference, plus one child per family, led to far more boys than girls being born." },
+    { topic: "China", q: "There are about 32 million more men than women under 20 in China. Which problem does this show?", o: ["An ageing population", "A gender imbalance", "Overpopulation", "Brain drain"], a: 1, e: "It is evidence for a gender imbalance, one of the policy's biggest social costs." },
+    { topic: "China", q: "What did China change the policy to in 2016?", o: ["No limit at all", "A two-child policy for all couples", "A one-child policy only in cities", "A three-child policy"], a: 1, e: "From 2016 all couples could have two children, because of the ageing population and fewer workers." },
+    { topic: "China", type: "open", q: "Give one SUCCESS and one PROBLEM of the one-child policy. Each needs a number.", model: "Success: the birth rate fell from about 45 per 1,000 (early 1970s) to 12 per 1,000 (2016).\nProblem: 119 boys are born for every 100 girls, or 32 million more men than women under 20, or the four-two-one problem." },
+
+    // ---------- Migration ----------
+    { topic: "Migration", q: "War in Syria is an example of a...", o: ["Pull factor", "Push factor", "Remittance", "Dependency ratio"], a: 1, e: "Push factors make people leave. War forces people out." },
+    { topic: "Migration", q: "Higher wages in the USA are a...", o: ["Push factor", "Pull factor", "Brain drain", "Forced migration"], a: 1, e: "Pull factors attract people to a new place." },
+    { topic: "Migration", q: "Syrians fleeing the civil war are an example of...", o: ["Voluntary migration", "Forced migration", "Rural-to-urban migration", "Seasonal migration"], a: 1, e: "Refugees do not choose to leave: they are forced out." },
+    { topic: "Migration", q: "Most migration from Mexico to the USA is...", o: ["Forced, because of war", "Voluntary, for jobs and higher incomes", "Caused by natural disasters", "Paid for by the US government"], a: 1, e: "Mexican migrants mostly choose to move for economic reasons." },
+    { topic: "Migration", q: "About what percentage of Mexican migrants in the USA are of working age (18 to 64)?", o: ["27%", "50%", "87%", "100%"], a: 2, e: "87% are of working age, so they fill jobs in the US economy." },
+    { topic: "Migration", q: "By September 2013, about how many people had left Syria?", o: ["200,000", "2 million", "12 million", "45 million"], a: 1, e: "About 2 million had left, and another 4.25 million were displaced inside Syria." },
+    { topic: "Migration", q: "The Zaatari refugee camp (about 120,000 people) is in which country?", o: ["Turkey", "Lebanon", "Jordan", "Mexico"], a: 2, e: "Jordan took in about 500,000 Syrian refugees, with pressure on its water supplies." },
+    { topic: "Migration", q: "Which is an effect of Syrian refugees on Lebanon?", o: ["Lower costs for the government", "Pressure on housing and services, costing about $806 million", "A fall in population", "More remittances from Syria"], a: 1, e: "Lebanon had about 720,000 registered refugees, with thousands arriving each day." },
+    { topic: "Migration", q: "People forced from their homes who stay INSIDE their own country are called...", o: ["Emigrants", "Internally displaced people", "Economic migrants", "Immigrants"], a: 1, e: "About 4.25 million Syrians were internally displaced in 2013." },
+    { topic: "Migration", q: "Which is a benefit of Mexican migration for the USA?", o: ["Fewer workers", "Workers to fill jobs, since most migrants are of working age", "More remittances sent to the USA", "A higher US birth rate only"], a: 1, e: "With 87% of working age, migrants add to the US labor force." },
+    { topic: "Migration", q: "About how many Mexicans live in the USA?", o: ["1.2 million", "12 million", "24 million", "120 million"], a: 1, e: "About 12 million, roughly one in ten Mexican citizens." },
+
+    // ---------- Over & underpopulation ----------
+    { topic: "Over & underpopulation", q: "About how many people per km² live in Australia?", o: ["3", "30", "300", "1,128"], a: 0, e: "Australia has very low density and rich resources, which is why it is called underpopulated." },
+    { topic: "Over & underpopulation", q: "Why might Australia NOT be able to support many more people?", o: ["It has no resources", "Much of the interior is dry and hard to live in", "Its birth rate is too high", "It has too many cities"], a: 1, e: "The inhospitable interior is the main argument against Australia being underpopulated." },
+    { topic: "Over & underpopulation", q: "Which is the best sign that a country is overpopulated?", o: ["It has a big capital city", "Its resources cannot support everyone, so many people are poor or without work", "It has a large area", "It has a high life expectancy"], a: 1, e: "Overpopulation is about people compared with resources, not just the number of people." },
+    { topic: "Over & underpopulation", q: "Why is population density alone NOT enough to prove overpopulation?", o: ["It ignores resources and living standards", "It is always too high", "It only counts adults", "It changes every day"], a: 0, e: "A crowded rich country can have high living standards. You need resources and living standards too." },
+
+    // ---------- Exam skills ----------
+    { topic: "Exam skills", q: "RAVEN: what does the R stand for?", o: ["Reliability", "Reputation", "Research", "Reason"], a: 1, e: "Reputation: is the source known to be trustworthy?" },
+    { topic: "Exam skills", q: "RAVEN: what does the A stand for?", o: ["Accuracy", "Ability to see", "Author", "Argument"], a: 1, e: "Ability to see: was the author in a position to know?" },
+    { topic: "Exam skills", q: "RAVEN: what does the E stand for?", o: ["Evidence", "Emotion", "Expertise", "Era"], a: 2, e: "Expertise: does the author have specialist knowledge?" },
+    { topic: "Exam skills", q: "RAVEN: what does the N stand for?", o: ["Numbers", "Neutrality", "Nationality", "News"], a: 1, e: "Neutrality: does the source take a side?" },
+    { topic: "Exam skills", q: "A government writes a report saying its own policy was a great success. Which RAVEN letter is the biggest worry?", o: ["Reputation", "Ability to see", "Vested interest", "Expertise"], a: 2, e: "The government gains if people believe its policy worked, so it has a vested interest." },
+    { topic: "Exam skills", q: "A doctor who has worked in Niger for ten years writes about its hospitals. Which RAVEN letters make this source strong?", o: ["Vested interest and Neutrality", "Expertise and Ability to see", "Reputation only", "None of them"], a: 1, e: "She has specialist knowledge (Expertise) and saw the hospitals herself (Ability to see)." },
+    { topic: "Exam skills", q: "In a PEE paragraph, the Evidence should be...", o: ["Your opinion", "A specific fact with a number or a date", "A question", "A repeat of the point"], a: 1, e: "Strong evidence is precise: '$24 billion in 2014', not 'lots of money'." },
+    { topic: "Exam skills", q: "Which sentence is the best POINT for 'Explain why Niger's population is growing quickly'?", o: ["Niger is in Africa.", "Niger's population is growing quickly because its birth rate is much higher than its death rate.", "The birth rate is 49 per 1,000.", "This is bad."], a: 1, e: "A point answers the question directly in one sentence." },
+    { topic: "Exam skills", q: "Which phrase best starts the EXPLAIN part of PEE?", o: ["For example,", "In conclusion,", "This means that... because...", "Firstly,"], a: 2, e: "The Explain links evidence to point. Use 'because' to show why." },
+    { topic: "Exam skills", q: "How should a 'To what extent' answer end?", o: ["With a new fact", "With a judgement: how far you agree and why", "With a question", "By repeating the introduction"], a: 1, e: "Weigh both sides, then decide: 'To a large extent... because...'." },
+    { topic: "Exam skills", q: "'Describe the trend' means you should...", o: ["Explain why it happened", "Say what happens to the data over time and use numbers", "Draw the graph again", "Give your opinion"], a: 1, e: "Describe = what happens. Use words like rose, fell, peaked, with two numbers and dates." },
+    { topic: "Exam skills", q: "A graph shows the death rate was 30 per 1,000 in 1900 and 8 per 1,000 in 2000. Which is the best description?", o: ["The death rate changed.", "The death rate fell from 30 to 8 per 1,000 between 1900 and 2000.", "The death rate is good.", "People got healthier."], a: 1, e: "Direction + two numbers + dates = full marks for describing a trend." },
+    { topic: "Exam skills", q: "Unseen case study: 'Country Q: 48% of people are under 15. Classes have 70 students and there are not enough teachers.' Which is the best EVIDENCE that the young population is a problem?", o: ["Country Q is a country.", "Classes have 70 students and there are not enough teachers.", "Young people are nice.", "Some people are under 15."], a: 1, e: "Pick the specific detail from the case study that shows pressure on services." },
+    { topic: "Exam skills", q: "In an unseen case study question, where should your evidence come from?", o: ["Only from memory", "From the case study you are given", "From your research paper", "You do not need evidence"], a: 1, e: "The case study gives you everything you need. Quote its facts and numbers." },
+    { topic: "Exam skills", q: "Which sentence COMPARES the two migrations?", o: ["Mexicans move to the USA.", "Syrians are refugees.", "Mexicans choose to move for higher wages, whereas Syrians are forced out by war.", "Migration is common."], a: 2, e: "A comparison puts both in the same sentence with a link word: whereas, however, while." },
+    { topic: "Exam skills", type: "open", q: "Write a judgement sentence for: 'To what extent is a young population a problem for a country?'", model: "Example: To a large extent a young population is a problem, because it puts pressure on schools and health care now; however, in the future these young people could become a large workforce." },
+    { topic: "Exam skills", type: "open", q: "A charity that helps migrants says 'migrants help the economy'. Use RAVEN to judge how reliable this is.", model: "Vested interest: the charity supports migrants, so it gains if people believe migration is good. Neutrality: it takes one side. It may have Expertise from working with migrants, but we should check its claim against a neutral source." },
+    { topic: "Exam skills", type: "open", q: "Turn this weak evidence into strong evidence: 'Lots of Mexicans send money home.'", model: "In 2014, Mexicans working abroad sent home over $24 billion in remittances." }
+  ]
+});
+
+</script>
+
+<script>
+{
+const PACKS = window.BOX_BLAST_PACKS || [];
+const COLORS = ["#F05023","#009682","#F5AA1E","#5BA4E6","#C05BD6"];
+const FX = {
+  p50:{k:"gain",t:"+50",d:"50 points. Better than nothing!"}, p100:{k:"gain",t:"+100",d:"100 points"},
+  p150:{k:"gain",t:"+150",d:"150 points"}, p200:{k:"gain",t:"+200",d:"200 points"},
+  p250:{k:"gain",t:"+250",d:"250 points"}, p300:{k:"gain",t:"+300",d:"300 points"},
+  p400:{k:"gain",t:"+400",d:"400 points"}, p500:{k:"jack",t:"+500",d:"Jackpot! 500 points"},
+  p1000:{k:"jack",t:"+1000",d:"MEGA JACKPOT! 1,000 points"},
+  x2:{k:"mult",t:"×2",d:"Double your score"}, x3:{k:"mult",t:"×3",d:"Triple your score"}, x5:{k:"mult",t:"×5",d:"Five times your score!"},
+  m100:{k:"loss",t:"−100",d:"Lose 100 points"}, m300:{k:"loss",t:"−300",d:"Lose 300 points"}, m500:{k:"loss",t:"−500",d:"Ouch! Lose 500 points"},
+  half:{k:"half",t:"½",d:"Lose half your score"}, bomb:{k:"bomb",t:"BOMB",d:"Score wiped to zero"},
+  swap:{k:"swap",t:"SWAP",d:"Swap scores with a team of your choice"}, steal:{k:"steal",t:"STEAL",d:"Steal 300 from a team of your choice"},
+  gift:{k:"gift",t:"GIFT",d:"Give 200 to another team"}, robin:{k:"steal",t:"ROBIN HOOD",d:"Take 250 from the leader (or from 2nd place if you lead)"},
+  party:{k:"party",t:"PARTY",d:"Every team gets +100"}, nuke:{k:"bomb",t:"NUKE",d:"Every OTHER team loses 200"},
+  topcut:{k:"half",t:"TOP CUT",d:"The leading team loses half (even if it's you!)"},
+  dbl:{k:"gamble",t:"DOUBLE OR NOTHING",d:"Coin flip: double your score, or lose it all"},
+  shield:{k:"shield",t:"SHIELD",d:"Blocks the next bad box that hits you"}, extra:{k:"extra",t:"EXTRA TURN",d:"Answer another question straight away"},
+  mystery:{k:"mystery",t:"?",d:"Mystery box: could be anything!"}
+};
+const TARGETED = ["swap","steal","gift"];
+const MIX = {
+  calm:{p50:2,p100:4,p150:3,p200:4,p250:2,p300:3,p400:1,p500:1,x2:1,party:1,shield:1,extra:1,m100:1.2,half:.5,bomb:.4,steal:.5,mystery:.8},
+  classic:{p50:1,p100:2,p150:2,p200:3,p250:2,p300:2,p400:1.5,p500:1.2,p1000:.35,x2:1.5,x3:.6,m100:1,m300:1,half:1,bomb:1.4,swap:1,steal:1,gift:.5,robin:.8,party:.7,nuke:.6,topcut:.6,dbl:.9,shield:.8,extra:.8,mystery:1},
+  chaos:{p50:1,p100:1,p200:2,p300:2,p400:1.5,p500:1.5,p1000:.8,x2:1.5,x3:1.2,x5:.6,m300:1.2,m500:1,half:1,bomb:2,swap:1.4,steal:1.4,gift:.8,robin:1,party:.6,nuke:1,topcut:1,dbl:1.5,shield:.8,extra:.8,mystery:1.4}
+};
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const store = { get(k, d) { try { return JSON.parse(localStorage.getItem("boxblast:" + k)) ?? d; } catch { return d; } }, set(k, v) { try { localStorage.setItem("boxblast:" + k, JSON.stringify(v)); } catch {} } };
+
+const hashPack = decodeURIComponent(location.hash.slice(1));
+let cfg = Object.assign({ pack: PACKS[0]?.id, teams: 4, names: ["Team 1","Team 2","Team 3","Team 4","Team 5"], size: 20, mix: "classic", timer: 0, steal: true, topics: null, sound: true }, store.get("cfg", {}));
+if (hashPack && PACKS.some(x => x.id === hashPack)) { cfg.pack = hashPack; cfg.topics = null; }
+if (!PACKS.some(x => x.id === cfg.pack)) cfg.pack = PACKS[0]?.id;
+/* ---------------- sound (synthesized, works offline) ---------------- */
+const SFX = (() => {
+  let ctx = null;
+  const ac = () => { if (!ctx) { const A = window.AudioContext || window.webkitAudioContext; if (!A) return null; ctx = new A(); } if (ctx.state === "suspended") ctx.resume(); return ctx; };
+  const tone = (f, t0, dur, type = "sine", vol = .25, f2 = null) => {
+    const c = ac(); if (!c) return; const o = c.createOscillator(), g = c.createGain(), t = c.currentTime + t0;
+    o.type = type; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + dur);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .01); g.gain.exponentialRampToValueAtTime(.001, t + dur);
+    o.connect(g).connect(c.destination); o.start(t); o.stop(t + dur + .05);
+  };
+  const noise = (t0, dur, vol = .5, lp = 1200) => {
+    const c = ac(); if (!c) return; const n = c.sampleRate * dur, buf = c.createBuffer(1, n, c.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n) ** 2;
+    const src = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain(), t = c.currentTime + t0;
+    src.buffer = buf; f.type = "lowpass"; f.frequency.setValueAtTime(lp, t); f.frequency.exponentialRampToValueAtTime(60, t + dur);
+    g.gain.setValueAtTime(vol, t); src.connect(f).connect(g).connect(c.destination); src.start(t);
+  };
+  const S = {
+    correct() { [523, 659, 784, 1047].forEach((f, i) => tone(f, i * .08, .25, "triangle", .22)); },
+    wrong() { tone(196, 0, .22, "sawtooth", .15); tone(147, .2, .4, "sawtooth", .15); },
+    open() { for (let i = 0; i < 8; i++) noise(i * .05, .05, .18, 3000); },
+    gain() { tone(988, 0, .12, "square", .12); tone(1319, .1, .4, "square", .12); },
+    jackpot() { [784, 988, 1175, 1568, 1976].forEach((f, i) => tone(f, i * .07, .3, "square", .1)); },
+    mult() { [660, 880, 1100, 1320, 1760, 2200].forEach((f, i) => tone(f, i * .06, .18, "sine", .2)); },
+    bomb() { noise(0, 1.6, .9, 900); tone(110, 0, 1.2, "sine", .5, 30); },
+    loss() { tone(392, 0, .3, "triangle", .25, 370); tone(349, .3, .3, "triangle", .25, 330); tone(311, .6, .8, "triangle", .25, 220); },
+    swap() { tone(300, 0, .35, "sine", .25, 1200); tone(1200, .3, .35, "sine", .25, 300); },
+    tick() { tone(1500, 0, .05, "square", .08); },
+    buzzer() { tone(110, 0, .7, "sawtooth", .25); tone(116, 0, .7, "sawtooth", .2); },
+    win() { [[523, 0], [523, .15], [523, .3], [784, .45], [659, .75], [784, .95], [1047, 1.15]].forEach(([f, t]) => tone(f, t, .35, "triangle", .25)); }
+  };
+  return n => { if (cfg.sound !== false) try { S[n] && S[n](); } catch {} };
+})();
+const fxSound = (fx, c) => fx === "dbl" ? (c && c.flip ? "jackpot" : "bomb") : ({ p500: "jackpot", p1000: "jackpot", x2: "mult", x3: "mult", x5: "mult", bomb: "bomb", nuke: "bomb", m100: "loss", m300: "loss", m500: "loss", half: "loss", topcut: "loss", swap: "swap", steal: "swap", gift: "swap", robin: "swap", party: "jackpot", shield: "mult", extra: "correct" }[fx] || "gain");
+
+let S = null;           // game state
+let hist = [];          // undo snapshots
+let tick = null;
+const app = document.getElementById("app");
+
+function pack() { return PACKS.find(p => p.id === cfg.pack) || PACKS[0]; }
+function topicsOf(p) { return [...new Set((p?.questions || []).map(q => q.topic || "General"))]; }
+
+function makeBoxes(n, mixName) {
+  const w = MIX[mixName], keys = Object.keys(w), tot = keys.reduce((s, k) => s + w[k], 0);
+  const draw = () => { let r = Math.random() * tot; for (const k of keys) { if ((r -= w[k]) <= 0) return k; } return keys[0]; };
+  const list = Array.from({ length: n }, draw);
+  // every board gets at least one big win and one disaster (none of the disasters on Calm boards of 12)
+  const must = [["p500","p1000","x2","x3","x5"], mixName === "calm" ? ["m100","half"] : ["bomb","nuke"]];
+  const mid = list.map((k, i) => FX[k].k === "gain" && +k.slice(1) <= 200 ? i : -1).filter(i => i > -1);
+  must.forEach(set => { if (!list.some(k => set.includes(k)) && mid.length) list[mid.splice(Math.random() * mid.length | 0, 1)[0]] = set.find(k => k in w) || set[0]; });
+  return shuffle(list).map((fx, i) => ({ n: i + 1, fx, open: false, by: null, res: null }));
+}
+
+/* ---------------- setup ---------------- */
+function renderSetup() {
+  clearInterval(tick);
+  const p = pack(), tps = topicsOf(p), saved = store.get("game", null);
+  const sel = cfg.topics && cfg.pack === cfg.topicsPack ? tps.filter(t => cfg.topics.includes(t)) : tps;
+  const count = (p?.questions || []).filter(q => sel.includes(q.topic || "General")).length;
+  const seg = (key, vals, lab = v => v) => `<div class="seg">${vals.map(v => `<button type="button" data-set="${key}" data-v="${v}" aria-pressed="${cfg[key] == v}">${lab(v)}</button>`).join("")}</div>`;
+  app.innerHTML = `<div class="setup">
+    <div class="hero"><div><span class="dots"><i></i><i></i><i></i></span><h1>Box <span>Blast</span></h1>
+      <p>Answer right, pick a box. Points, multipliers, swaps, steals… and bombs.</p></div></div>
+    ${saved ? `<div class="box resume"><div><h3>Game in progress</h3><p class="note">${esc(saved.S.title)} · ${saved.S.teams.map(t => esc(t.name) + " " + t.score).join(" · ")}</p></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn alt" id="discard">Discard</button><button class="btn" id="resume">Resume game</button></div></div>` : ""}
+    <div class="grid2">
+      <div class="box"><h3>Question pack</h3>
+        <select id="pk">${[...new Set(PACKS.map(x => x.subject || "Other"))].map(sub => `<optgroup label="${esc(sub)}">${PACKS.filter(x => (x.subject || "Other") === sub).map(x => `<option value="${esc(x.id)}" ${x.id === p?.id ? "selected" : ""}>${esc(x.title)}</option>`).join("")}</optgroup>`).join("")}</select>
+        <p class="note">${esc(p?.subtitle || "")} · ${p?.questions.length || 0} questions</p>
+        <h3 style="margin-top:16px">Topics</h3>
+        <div class="chips">${tps.map(t => `<label><input type="checkbox" data-topic="${esc(t)}" ${sel.includes(t) ? "checked" : ""}>${esc(t)}</label>`).join("")}</div>
+        <p class="note">${count} questions selected.</p>
+      </div>
+      <div class="box"><h3>Teams</h3>${seg("teams", [2,3,4,5])}
+        <div class="teams">${Array.from({ length: cfg.teams }, (_, i) => `<label><span class="sw" style="background:${COLORS[i]}"></span><input type="text" data-name="${i}" value="${esc(cfg.names[i])}" aria-label="Team ${i + 1} name"></label>`).join("")}</div>
+      </div>
+      <div class="box"><h3>Board size</h3>${seg("size", [12,16,20,25,30])}
+        <h3 style="margin-top:16px">Box mix</h3>${seg("mix", ["calm","classic","chaos"], v => v[0].toUpperCase() + v.slice(1))}
+        <p class="note">Calm: mostly points, few losses. Classic: points from +50 to +1000, bombs, swaps, Robin Hood, double or nothing, shields, mystery boxes. Chaos: more of the wild ones, plus ×5 and −500. Every board is dealt fresh.</p></div>
+      <div class="box"><h3>Timer</h3>${seg("timer", [0,30,45,60,90], v => v ? v + "s" : "Off")}
+        <h3 style="margin-top:16px">Wrong answer</h3>${seg("steal", [true,false], v => v ? "Next team can steal" : "Turn passes")}
+        <h3 style="margin-top:16px">Sound effects</h3>${seg("sound", [true,false], v => v ? "On" : "Off")}
+        <h3 style="margin-top:16px">Your own pack</h3>
+        <div class="seg"><button type="button" class="btn alt" id="ld">Load pack (.json)</button><button type="button" class="btn alt" id="tpl">Pack template</button></div>
+        <input type="file" id="file" accept=".json,application/json" hidden>
+        <p class="note" id="msg"></p></div>
+    </div>
+    <div class="start"><span class="note">Keys in play: A–D to answer, Space to continue, U to undo. The game saves itself as you play.</span>
+      <button class="btn" id="go" ${count ? "" : "disabled"}>Start game</button></div>
+    <details class="box guide"><summary>Teacher guide: how to run it</summary>
+      <ol>
+        <li>Pick the topics, teams, board size, box mix, timer and steal rule here, then press <b>Start game</b>.</li>
+        <li>The <b>How to play</b> screen comes up first. Read it with the class, then press <b>Let's play!</b> You can bring it back any time with the <b>Rules</b> button.</li>
+        <li>Press <b>Show question</b> (or <kbd>Space</kbd>). For multiple choice, click the team's answer or press <kbd>A</kbd>–<kbd>D</kbd>. For open questions, take the answer out loud or on whiteboards, press <b>Show model answer</b>, then <b>Correct</b> or <b>Not quite</b>.</li>
+        <li>Correct: press <b>Pick a box</b>, and click the box the team calls out. Wrong: the next team can steal (if steals are on). The wrong option stays crossed out.</li>
+        <li>Swap, Steal and Gift boxes ask the team to choose a target team. Everything else happens automatically, and every score change is shown.</li>
+        <li>The game ends when every box is open. Press <b>End game</b> to stop early.</li>
+      </ol>
+      <ul>
+        <li><b>Undo</b> (or <kbd>U</kbd>) goes back one step at a time: a misclick, a wrong judgment, even a box. It works from the final screen too.</li>
+        <li><b>Skip question</b> swaps a question you don't want for a new one before anyone answers.</li>
+        <li>The game saves itself. If the page closes, open it again on the same computer and press <b>Resume game</b>.</li>
+        <li>If you run out of questions, the pack reshuffles and repeats.</li>
+      </ul></details>
+    <div id="tplbox"></div>
+  </div>
+  <div class="foot"><span class="dots"><i></i><i></i><i></i></span>Wellspring International Bilingual Schools · Social Sciences</div>`;
+  app.querySelectorAll("[data-set]").forEach(b => b.onclick = () => { const v = b.dataset.v; cfg[b.dataset.set] = v === "true" ? true : v === "false" ? false : isNaN(v) ? v : +v; save(); renderSetup(); });
+  app.querySelector("#pk").onchange = e => { cfg.pack = e.target.value; cfg.topics = null; save(); try { history.replaceState(null, "", "#" + cfg.pack); } catch {} renderSetup(); };
+  app.querySelectorAll("[data-topic]").forEach(c => c.onchange = () => { cfg.topics = [...app.querySelectorAll("[data-topic]:checked")].map(x => x.dataset.topic); cfg.topicsPack = cfg.pack; save(); renderSetup(); });
+  app.querySelectorAll("[data-name]").forEach(inp => inp.oninput = () => { cfg.names[+inp.dataset.name] = inp.value; save(); });
+  app.querySelector("#go").onclick = () => startGame(sel);
+  const rs = app.querySelector("#resume"); if (rs) rs.onclick = () => { S = saved.S; hist = saved.hist || []; if (S.phase === "question" && S.cur) S.cur.started = Date.now(); render(); };
+  const dc = app.querySelector("#discard"); if (dc) dc.onclick = () => { store.set("game", null); renderSetup(); };
+  const file = app.querySelector("#file");
+  app.querySelector("#ld").onclick = () => file.click();
+  file.onchange = async () => {
+    const msg = app.querySelector("#msg");
+    try {
+      const data = JSON.parse(await file.files[0].text());
+      if (!Array.isArray(data.questions) || !data.questions.length) throw new Error("No questions array found.");
+      data.id = data.id || "custom-" + Date.now(); data.title = data.title || file.files[0].name;
+      const bad = data.questions.findIndex(q => !q.q || (q.type !== "open" && (!Array.isArray(q.o) || q.o[q.a] === undefined)));
+      if (bad > -1) throw new Error("Question " + (bad + 1) + " is missing q, o or a.");
+      PACKS.push(data); cfg.pack = data.id; cfg.topics = null; renderSetup();
+    } catch (err) { msg.textContent = "Could not load that pack: " + err.message; }
+  };
+  app.querySelector("#tpl").onclick = () => {
+    const t = JSON.stringify({ id: "my-topic", title: "My topic review", subtitle: "Grade 9 · Unit review", questions: [
+      { topic: "Key terms", q: "Question text?", o: ["Option A", "Option B", "Option C", "Option D"], a: 1, e: "Why B is right." },
+      { topic: "Skills", type: "open", q: "Open question the teacher judges", model: "Model answer shown after reveal." }] }, null, 2);
+    app.querySelector("#tplbox").innerHTML = `<div class="box" style="margin-top:18px"><h3>Pack template</h3><p class="note">a = index of the correct option, counting from 0. Save as a .json file and load it above.</p><textarea readonly>${esc(t)}</textarea><button class="btn alt" id="cp" style="margin-top:8px">Copy</button></div>`;
+    app.querySelector("#cp").onclick = async e => { try { await navigator.clipboard.writeText(t); e.target.textContent = "Copied"; } catch { app.querySelector("#tplbox textarea").select(); } };
+  };
+}
+function save() { store.set("cfg", { ...cfg }); }
+
+/* ---------------- game ---------------- */
+function startGame(topics) {
+  const p = pack();
+  const qs = shuffle(p.questions.filter(q => topics.includes(q.topic || "General")));
+  S = { title: p.title, teams: Array.from({ length: cfg.teams }, (_, i) => ({ name: cfg.names[i] || "Team " + (i + 1), score: 0, last: "", c: COLORS[i] })),
+        boxes: makeBoxes(cfg.size, cfg.mix), pool: qs, qi: 0, turn: 0, phase: "ready", cur: null, asked: 0, recycled: false, timer: cfg.timer, steal: cfg.steal, cols: cols(cfg.size), mix: cfg.mix, rules: true };
+  hist = []; render();
+}
+function cols(n) { return n <= 12 ? 4 : n <= 20 ? (n === 16 ? 4 : 5) : n <= 25 ? 5 : 6; }
+function snap() { hist.push(JSON.stringify(S)); if (hist.length > 60) hist.shift(); }
+function undo() { if (!hist.length) return; S = JSON.parse(hist.pop()); render(); }
+function closed() { return S.boxes.filter(b => !b.open).length; }
+function nextQ() {
+  if (S.qi >= S.pool.length) { S.pool = shuffle(S.pool); S.qi = 0; S.recycled = true; }
+  const q = S.pool[S.qi++];
+  if (q.type === "open" || q.keepOrder || !Array.isArray(q.o)) return q;
+  const order = shuffle(q.o.map((_, i) => i));            // shuffle options every time
+  return Object.assign({}, q, { o: order.map(i => q.o[i]), a: order.indexOf(q.a) });
+}
+function ask() {
+  if (!closed()) return finish();
+  snap();
+  S.cur = { q: nextQ(), team: S.turn, answering: S.turn, stealing: false, chosen: [], revealed: false, correct: null, started: Date.now() };
+  S.asked++; S.phase = "question"; render();
+}
+function judge(ok) {
+  snap();
+  const c = S.cur; c.correct = ok; c.revealed = true; SFX(ok ? "correct" : "wrong");
+  render();
+}
+function choose(i) {
+  const c = S.cur; if (c.revealed || c.chosen.includes(i)) return;
+  snap(); c.chosen.push(i); c.revealed = true; c.correct = i === c.q.a; SFX(c.correct ? "correct" : "wrong"); render();
+}
+function stealTry() {
+  snap();
+  const c = S.cur; c.stealing = true; c.answering = (c.team + 1) % S.teams.length; c.revealed = false; c.correct = null; c.started = Date.now(); render();
+}
+function advance(from) { S.turn = (from + 1) % S.teams.length; S.phase = "ready"; S.cur = null; render(); }
+function openBox(i) {
+  const b = S.boxes[i]; if (b.open || S.phase !== "pick") return;
+  snap();
+  const c = S.cur, t = S.teams[c.answering];
+  b.open = true; b.by = c.answering; c.box = i; c.before = t.score; c.mystery = false;
+  if (b.fx === "mystery") { const pool = Object.keys(FX).filter(k => k !== "mystery" && !TARGETED.includes(k)); b.res = pool[Math.random() * pool.length | 0]; c.mystery = true; } else b.res = b.fx;
+  SFX("open");
+  if (TARGETED.includes(b.res) && S.teams.length > 1) { S.phase = "target"; render(); return; }
+  resolve(b, t, null);
+}
+function resolve(b, t, target) { apply(b.res, t, target); setTimeout(() => SFX(fxSound(b.res, S.cur)), 450); S.phase = "reveal"; render(); }
+const lead = (ex = -1) => S.teams.reduce((m, x, i) => i !== ex && (m < 0 || x.score > S.teams[m].score) ? i : m, -1);
+function apply(fx, t, target) {
+  const c = S.cur, T = S.teams, me = T.indexOf(t), lines = [], before = T.map(x => x.score);
+  // hurt(): a loss that a shield can block
+  const hurt = (x, fn) => { if (x.shield) { x.shield = false; lines.push(`${x.name}'s shield blocks it!`); return false; } x.score = Math.max(0, Math.round(fn(x.score) / 10) * 10); return true; };
+  switch (fx) {
+    case "p50": case "p100": case "p150": case "p200": case "p250": case "p300": case "p400": case "p500": case "p1000": t.score += +fx.slice(1); break;
+    case "x2": t.score *= 2; if (!before[me]) lines.push("Double zero is still zero. Unlucky!"); break;
+    case "x3": t.score *= 3; if (!before[me]) lines.push("Triple zero is still zero. Unlucky!"); break;
+    case "x5": t.score *= 5; if (!before[me]) lines.push("Five times zero... still zero!"); break;
+    case "m100": hurt(t, v => v - 100); break;
+    case "m300": hurt(t, v => v - 300); break;
+    case "m500": hurt(t, v => v - 500); break;
+    case "half": hurt(t, v => v / 2); break;
+    case "bomb": if (hurt(t, () => 0)) lines.push(`${t.name} loses everything.`); break;
+    case "swap": if (target.score > t.score && target.shield) { target.shield = false; lines.push(`${target.name}'s shield blocks the swap!`); } else { const v = t.score; t.score = target.score; target.score = v; lines.push(`${t.name} and ${target.name} swap scores.`); } break;
+    case "steal": { const amt = Math.min(300, target.score); if (amt && hurt(target, v => v - amt)) { t.score += amt; lines.push(`${t.name} steals ${amt} from ${target.name}.`); } else if (!amt) lines.push(`${target.name} has nothing to steal!`); break; }
+    case "gift": { const amt = Math.min(200, t.score); t.score -= amt; target.score += amt; lines.push(amt ? `${t.name} gives ${amt} to ${target.name}.` : `${t.name} has nothing to give!`); break; }
+    case "robin": { if (T.length < 2) break; let v = lead(); if (v === me) v = lead(me); const vic = T[v], amt = Math.min(250, vic.score); target = vic;
+      if (amt && hurt(vic, x => x - amt)) { t.score += amt; lines.push(`${t.name} takes ${amt} from ${vic.name}.`); } else if (!amt) lines.push(`${vic.name} has nothing to take!`); break; }
+    case "party": T.forEach(x => x.score += 100); break;
+    case "nuke": T.forEach((x, i) => { if (i !== me) hurt(x, v => v - 200); }); break;
+    case "topcut": { const v = lead(); target = T[v]; if (hurt(T[v], x => x / 2)) lines.push(v === me ? `${t.name} is top, so ${t.name} gets cut!` : `${T[v].name} is top and loses half.`); break; }
+    case "dbl": { c.flip = Math.random() < .5; if (c.flip) { t.score *= 2; lines.push(before[me] ? "Heads! Score doubled." : "Heads! But double zero is still zero."); } else if (hurt(t, () => 0)) lines.push("Tails! Score lost."); break; }
+    case "shield": t.shield = true; lines.push(`${t.name} is protected from the next bad box.`); break;
+    case "extra": lines.push(`${t.name} answers again straight away.`); break;
+  }
+  c.lines = lines; c.delta = t.score - before[me]; c.target = target ? T.indexOf(target) : null; c.res = fx;
+  T.forEach((x, i) => { const d = x.score - before[i]; x.last = i === me ? `${d >= 0 ? "+" : ""}${d} (box ${S.boxes[c.box].n})` : d ? `${d > 0 ? "+" : ""}${d} from ${FX[fx].t}` : ""; });
+}
+function chooseTarget(j) { snap(); resolve(S.boxes[S.cur.box], S.teams[S.cur.answering], S.teams[j]); }
+function afterReveal() {
+  const c = S.cur;
+  if (!closed()) { snap(); return finish(); }
+  if (c.res === "extra") { S.turn = c.answering; S.phase = "ready"; S.cur = null; return render(); }
+  advance(c.stealing ? c.answering : c.team);
+}
+function finish() { clearInterval(tick); S.phase = "end"; SFX("win"); render(); }
+
+/* ---------------- render ---------------- */
+function persist() { if (!S) return; store.set("game", S.phase === "end" ? null : { S, hist: hist.slice(-25) }); }
+function render() {
+  clearInterval(tick); persist();
+  if (!S) return renderSetup();
+  if (S.phase === "end") return renderEnd();
+  const c = S.cur, act = c ? c.answering : S.turn;
+  const left = closed();
+  app.innerHTML = `
+  <div class="top"><span class="dots"><i></i><i></i><i></i></span><span class="t">Box <span>Blast</span></span>
+    <span class="meta">${esc(S.title)} · ${left} boxes left · ${S.asked} questions${S.recycled ? " (pack recycled)" : ""}</span>
+    <button class="btn alt" id="rulesb">Rules</button>
+    <button class="btn alt" id="snd" aria-pressed="${cfg.sound !== false}">${cfg.sound !== false ? "Sound on" : "Sound off"}</button>
+    <button class="btn alt" id="undo" ${hist.length ? "" : "disabled"}>Undo</button>
+    <button class="btn alt" id="endg">End game</button></div>
+  <div class="play">
+    <div class="banner"><b style="color:${S.teams[act].c}">${esc(S.teams[act].name)}</b>
+      <span>${S.phase === "pick" ? "Correct! Pick a box." : S.phase === "ready" ? "you're up next." : ""}</span>
+      <span class="sp">${S.phase === "ready" ? `<button class="btn" id="askb">Show question</button>` : ""}</span></div>
+    <div class="scores">${S.teams.map((t, i) => `<div class="team ${i === act ? "on" : ""}" style="--c:${t.c}"><div class="n"><span>${esc(t.name)}</span>${t.shield ? `<span class="sh">SHIELD</span>` : ""}</div><div class="s">${t.score}</div><div class="d">${esc(t.last)}</div></div>`).join("")}</div>
+    <div class="board" style="--cols:${S.cols};--rows:${Math.ceil(S.boxes.length / S.cols)}">${S.boxes.map((b, i) => { const f = FX[b.res || b.fx]; return `<button class="crate ${b.open ? "open" : ""} ${S.phase === "pick" && !b.open ? "pickable" : ""}" data-box="${i}" ${S.phase === "pick" && !b.open ? "" : "disabled"} aria-label="Box ${b.n}${b.open ? ": " + f.d : ""}"><span class="in"><span class="f">${b.n}</span><span class="b k-${f.k}">${f.t}${b.by !== null ? `<small>${esc(S.teams[b.by].name)}</small>` : ""}</span></span></button>`; }).join("")}</div>
+  </div>
+  ${overlay()}`;
+  bind();
+}
+function rulesCard() {
+  const keys = Object.keys(MIX[S.mix || "classic"]);
+  const grp = { good: [], bad: [], wild: [] };
+  keys.forEach(k => { const f = FX[k], g = ["gain","jack","mult","party","shield","extra"].includes(f.k) ? "good" : ["loss","half","bomb"].includes(f.k) ? "bad" : "wild"; grp[g].push(f); });
+  const chip = f => `<li><span class="k-${f.k}">${esc(f.t)}</span>${esc(f.d)}</li>`;
+  const pts = grp.good.filter(f => f.k === "gain" || f.k === "jack"), other = grp.good.filter(f => !(f.k === "gain" || f.k === "jack"));
+  return `<div class="ov"><div class="card rules">
+    <h2>How to play</h2>
+    <ol class="steps">
+      <li><b>1</b><span><strong>Your team gets a question.</strong> Talk it over, then give ONE answer.${S.timer ? ` You have ${S.timer} seconds.` : ""}</span></li>
+      <li><b>2</b><span><strong>Right answer? Pick a box.</strong> Each box hides a surprise. You don't know what's inside until it opens!</span></li>
+      <li><b>3</b><span><strong>Wrong answer?</strong> ${S.steal ? "The next team can try to steal the question. If they get it right, they pick a box." : "No box this time. The turn passes on."}</span></li>
+      <li><b>4</b><span><strong>The team with the most points at the end wins.</strong> Scores can't go below zero.</span></li>
+    </ol>
+    <div class="legend">
+      <div><h3>Good boxes</h3><p class="pts">${pts.map(f => `<span class="k-${f.k}">${esc(f.t)}</span>`).join(" ")}</p><ul>${other.map(chip).join("")}</ul></div>
+      <div><h3>Bad boxes</h3><ul>${grp.bad.map(chip).join("")}</ul></div>
+      <div><h3>Wild boxes</h3><ul>${grp.wild.map(chip).join("")}</ul></div>
+    </div>
+    <div class="acts"><span class="note l" style="color:#5a6b7a">${S.boxes.length} boxes · ${S.teams.length} teams</span><button class="btn" id="play">${S.asked ? "Back to the game" : "Let's play!"}</button></div>
+  </div></div>`;
+}
+function overlay() {
+  if (S.rules) return rulesCard();
+  const c = S.cur;
+  if (S.phase === "question") {
+    const q = c.q, t = S.teams[c.answering], open = q.type === "open";
+    const L = "ABCD";
+    let body;
+    if (!open) {
+      body = `<div class="opts">${q.o.map((o, i) => { let cls = ""; if (c.chosen.includes(i)) cls = i === q.a ? "right" : "wrong"; else if (c.revealed && c.correct) cls = "dim"; if (c.revealed && c.correct === false && !canSteal() && i === q.a) cls = "right";
+        return `<button class="opt ${cls}" data-opt="${i}" ${c.chosen.includes(i) || c.revealed ? "disabled" : ""}><b>${L[i]}</b><span>${esc(o)}</span></button>`; }).join("")}</div>`;
+      if (c.revealed) {
+        const showAns = c.correct || !canSteal();
+        body += `<div class="ex ${c.correct ? "" : "bad"}"><strong>${c.correct ? "Correct!" : "Not quite."}</strong> ${showAns ? esc(q.e || "") : c.stealing ? "" : "Steal chance for the next team?"}</div>`;
+      }
+    } else {
+      body = c.revealed || c.shown ? `<div class="ex"><strong>Model answer</strong><div class="model">${esc(q.model)}</div></div>` : `<p class="note" style="color:#5a6b7a">Teams answer out loud or on whiteboards. Reveal the model answer, then mark it.</p>`;
+    }
+    const acts = [];
+    if (open && !c.shown) acts.push(`<button class="btn" id="show">Show model answer</button>`);
+    if (open && c.shown && c.correct === null) acts.push(`<button class="btn no" id="nope">Not quite</button><button class="btn ok" id="yes">Correct</button>`);
+    if (c.revealed && c.correct) acts.push(`<button class="btn" id="topick">Pick a box →</button>`);
+    if (c.revealed && c.correct === false) {
+      if (canSteal()) acts.push(`<button class="btn alt" id="pass">No steal</button><button class="btn" id="st">${esc(S.teams[(c.team + 1) % S.teams.length].name)} steals</button>`);
+      else acts.push(`<button class="btn" id="next">Next team →</button>`);
+    }
+    if (!c.revealed && !open) acts.push(`<button class="btn alt l" id="skip">Skip question</button>`);
+    return `<div class="ov"><div class="card" style="--c:${t.c}">
+      <div class="who"><span style="color:${t.c}">${esc(t.name)}${c.stealing ? " · steal attempt" : ""}</span><span class="tag">${esc(q.topic || "")}</span>${S.timer && !c.revealed ? `<span class="timer" id="tm"></span>` : ""}</div>
+      <h2>${esc(q.q)}</h2>${body}<div class="acts">${acts.join("")}</div></div></div>`;
+  }
+  if (S.phase === "target") {
+    const t = S.teams[c.answering], b = S.boxes[c.box], f = FX[b.res];
+    return `<div class="ov"><div class="card fx" style="--c:${t.c}">${c.mystery ? `<p>Mystery box turns into…</p>` : ""}<div class="big"><span class="k-${f.k}">${f.t}</span></div><p>${esc(f.d)}. ${esc(t.name)}, choose a team:</p>
+      <div class="pick">${S.teams.map((x, j) => j === c.answering ? "" : `<button data-tg="${j}" style="--c:${x.c}">${esc(x.name)}${x.shield ? " · shield" : ""}<span>${x.score}</span></button>`).join("")}</div></div></div>`;
+  }
+  if (S.phase === "reveal") {
+    const t = S.teams[c.answering], b = S.boxes[c.box], f = FX[b.res];
+    const bad = ["bomb","nuke"].includes(b.res) || (b.res === "dbl" && !c.flip);
+    const head = b.res === "dbl" ? (c.flip ? "HEADS ×2" : "TAILS: BUST") : f.t;
+    const summary = S.teams.map(x => x.last && x !== t ? `${x.name} ${x.last.split(" from")[0]}` : "").filter(Boolean).join(" · ");
+    return `<div class="ov"><div class="card fx ${bad ? "boom" : ""}" style="--c:${t.c}"><div class="who"><span>Box ${b.n}${c.mystery ? " · mystery box" : ""}</span><span class="tag">${esc(t.name)}</span></div>
+      <div class="big"><span class="k-${f.k}">${esc(head)}</span></div><p><strong>${esc(f.d)}</strong></p>
+      ${c.lines.map(l => `<p>${esc(l)}</p>`).join("")}
+      <p>${esc(t.name)}: ${c.before} → <strong>${t.score}</strong></p>${summary ? `<p class="note" style="color:#5a6b7a">${esc(summary)}</p>` : ""}
+      <div class="acts" style="justify-content:center"><button class="btn" id="cont">${!closed() ? "Final scores →" : c.res === "extra" ? "Extra turn →" : "Next team →"}</button></div></div></div>`;
+  }
+  return "";
+}
+function canSteal() { return S.steal && !S.cur.stealing && S.teams.length > 1 && S.cur.q.type !== "open"; }
+function bind() {
+  const $ = s => app.querySelector(s), on = (s, f) => { const e = $(s); if (e) e.onclick = f; };
+  on("#undo", undo); on("#rulesb", () => { S.rules = true; render(); }); on("#play", () => { S.rules = false; render(); }); on("#snd", () => { cfg.sound = cfg.sound === false; save(); render(); }); on("#endg", () => { snap(); finish(); });
+  on("#askb", ask);
+  app.querySelectorAll("[data-opt]").forEach(b => b.onclick = () => choose(+b.dataset.opt));
+  app.querySelectorAll("[data-box]").forEach(b => b.onclick = () => openBox(+b.dataset.box));
+  app.querySelectorAll("[data-tg]").forEach(b => b.onclick = () => chooseTarget(+b.dataset.tg));
+  on("#show", () => { snap(); S.cur.shown = true; render(); });
+  on("#yes", () => judge(true)); on("#nope", () => judge(false));
+  on("#topick", () => { snap(); S.phase = "pick"; render(); });
+  on("#st", stealTry);
+  on("#pass", () => advance(S.cur.team)); on("#next", () => advance(S.cur.team));
+  on("#skip", () => { snap(); S.cur.q = nextQ(); S.cur.started = Date.now(); render(); });
+  on("#cont", afterReveal);
+  const tm = $("#tm");
+  if (tm) { const upd = () => { const r = Math.max(0, S.timer - Math.floor((Date.now() - S.cur.started) / 1000)); tm.textContent = r ? r + "s" : "Time!"; tm.classList.toggle("low", r <= 5);
+      if (r !== S.cur.lastTick) { if (r > 0 && r <= 5) SFX("tick"); if (r === 0 && S.cur.lastTick !== undefined) SFX("buzzer"); S.cur.lastTick = r; }
+      if (!r) clearInterval(tick); }; upd(); tick = setInterval(upd, 250); }
+  if (S.phase === "pick") $(".banner")?.scrollIntoView({ block: "nearest" });
+}
+function renderEnd() {
+  const r = S.teams.map(t => t).sort((a, b) => b.score - a.score);
+  app.innerHTML = `<div class="end"><span class="dots"><i></i><i></i><i></i></span><h1><span>${esc(r[0].name)}</span> wins!</h1>
+    <div class="podium">${r.map((t, i) => `<div style="--c:${t.c}"><span class="r">${i + 1}</span><span class="nm">${esc(t.name)}</span><span class="sc">${t.score}</span></div>`).join("")}</div>
+    <p class="note">${S.asked} questions asked · ${S.boxes.filter(b => b.open).length} boxes opened</p>
+    <div class="acts" style="justify-content:center"><button class="btn alt" id="undo2" ${hist.length ? "" : "disabled"}>Back to the board</button><button class="btn alt" id="setup">New game setup</button><button class="btn" id="again">Play again, same settings</button></div></div>`;
+  app.querySelector("#undo2").onclick = undo;
+  app.querySelector("#setup").onclick = () => { S = null; render(); };
+  app.querySelector("#again").onclick = () => { const p = pack(), tps = topicsOf(p); startGame(cfg.topics && cfg.topicsPack === cfg.pack ? tps.filter(t => cfg.topics.includes(t)) : tps); };
+}
+window.boxBlast = { state: () => S };
+document.addEventListener("keydown", e => {
+  if (!S || e.target.matches("input,textarea,select")) return;
+  const k = e.key.toLowerCase();
+  if (k === "u") return undo();
+  if (S.phase === "question" && "abcd".includes(k) && k.length === 1) { const b = app.querySelector(`[data-opt="${"abcd".indexOf(k)}"]`); if (b && !b.disabled) b.click(); return; }
+  if (k === " " || k === "enter") {
+    const b = app.querySelector("#play,#askb,#topick,#cont,#next,#show");
+    if (b) { e.preventDefault(); b.click(); }
+  }
+});
+render();
+}
+</script>
+</body>
+</html>
