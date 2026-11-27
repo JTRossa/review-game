@@ -48,4 +48,6 @@ The engine is finished. **Almost all work in this repo is adding question packs.
 ## Engine facts (for answering James's questions)
 - 2 to 5 teams; boards of 12, 16, 20, 25 or 30; box mixes Calm, Classic or Chaos; timer; steal on wrong answer; synthesized sound; undo (U); skip question; autosave and resume in the browser; How to play screen for students; teacher guide on the setup page; load a .json pack from the setup screen.
 - Boxes: +50 to +400, +500 and +1000 jackpots, ×2/×3/×5, −100/−300/−500, half, bomb, nuke, top cut, swap, steal 300, gift 200, Robin Hood, party, double or nothing, shield, extra turn, mystery. Boards are dealt randomly, with one big win and one disaster guaranteed. Scores never go below 0.
+- Themes: Classic (built-in drumroll, spotlight and countdown reveals, or one teacher clip) and Pokémon (a clip before every box, matched by box type; music while picking; intro and ending clips). Teams start on 1000 by default (setup option 0/500/1000).
+- **Never commit Pokémon or other copyrighted clips to this public repo.** Teachers load the clips folder once per computer (kept in IndexedDB). A local copy can set `window.BOX_BLAST_MEDIA = { base: "clips/" }` to read clips beside index.html.
 - Look: Wellspring navy, with orange, gold and teal accents; Mulish titles and Calibri body text.

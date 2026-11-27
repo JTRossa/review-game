@@ -135,6 +135,51 @@ select option{color:#000}
 textarea{width:100%;min-height:140px;font:14px/1.4 ui-monospace,Consolas,monospace;border-radius:8px;padding:10px;background:#00000033;color:#fff;border:1px solid #ffffff33}
 @media(max-width:820px),(max-height:520px){.play{grid-template-columns:1fr;grid-template-rows:none;height:auto}.board{height:auto;grid-template-rows:none}.crate{aspect-ratio:4/3;height:auto}.scores{grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}.team.on{transform:none}.team .s{font-size:28px}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ---------- suspense reveal ---------- */
+.sus{background:radial-gradient(circle at 50% 55%,#0b2c55 0%,#020b18 70%);z-index:8;cursor:pointer;overflow:hidden;animation:none}
+.sus .stage{position:relative;display:grid;place-items:center;gap:22px;text-align:center}
+.sus .lab{font:900 clamp(22px,3.4vw,44px)/1.1 Mulish,Calibri,sans-serif;color:var(--gold);letter-spacing:.04em;text-transform:uppercase;text-shadow:0 4px 24px #000}
+.sus .who2{font:800 clamp(16px,2vw,24px) Mulish,Calibri,sans-serif;color:var(--c)}
+.sus .skip{position:fixed;right:18px;bottom:16px;font-size:14px;color:#ffffff88}
+.sus .bx{width:clamp(180px,26vw,320px);aspect-ratio:1;border-radius:22px;display:grid;place-items:center;font:900 clamp(70px,11vw,150px) Mulish,sans-serif;color:var(--navy);background:linear-gradient(160deg,#fff 0%,#dfe7ee 100%);box-shadow:0 10px 0 #8ea1b3,0 30px 60px #000c;position:relative}
+.sus .bx::after{content:"";position:absolute;inset:14px;border:3px dashed #00285533;border-radius:14px}
+/* drumroll: crate shakes harder and harder, then flashes */
+.sus-drumroll .bx{animation:rumble var(--d) cubic-bezier(.6,0,1,1) forwards}
+.sus-drumroll::before{content:"";position:fixed;inset:0;background:#fff;opacity:0;animation:flash .5s ease-out calc(var(--d) - .15s) forwards;pointer-events:none}
+@keyframes rumble{0%{transform:none}10%{transform:translate(-2px,1px) rotate(-.5deg)}20%{transform:translate(3px,-2px) rotate(.8deg)}30%{transform:translate(-4px,2px) rotate(-1.2deg)}40%{transform:translate(6px,-3px) rotate(1.6deg) scale(1.02)}50%{transform:translate(-8px,4px) rotate(-2.4deg) scale(1.04)}60%{transform:translate(10px,-5px) rotate(3deg) scale(1.06)}70%{transform:translate(-13px,6px) rotate(-4deg) scale(1.09)}80%{transform:translate(16px,-8px) rotate(5deg) scale(1.12)}90%{transform:translate(-20px,9px) rotate(-6deg) scale(1.16)}100%{transform:translate(0,0) scale(1.25)}}
+@keyframes flash{0%{opacity:0}30%{opacity:.95}100%{opacity:0}}
+/* spotlight: dark stage, sweeping beams, the box as a glowing silhouette */
+.sus-spotlight .beam{position:fixed;bottom:-10vh;width:22vw;height:130vh;background:linear-gradient(to top,#ffe9a855,#ffe9a800 85%);clip-path:polygon(42% 100%,58% 100%,100% 0,0 0);transform-origin:50% 100%;filter:blur(2px);mix-blend-mode:screen}
+.sus-spotlight .beam.l{left:8vw;animation:sweepL 1.3s ease-in-out infinite alternate}
+.sus-spotlight .beam.r{right:8vw;animation:sweepR 1.1s ease-in-out infinite alternate}
+@keyframes sweepL{from{transform:rotate(-28deg)}to{transform:rotate(22deg)}}
+@keyframes sweepR{from{transform:rotate(26deg)}to{transform:rotate(-24deg)}}
+.sus-spotlight .rays{position:absolute;width:min(90vw,760px);aspect-ratio:1;border-radius:50%;background:repeating-conic-gradient(from 0deg,#f5aa1e33 0 8deg,#f5aa1e00 8deg 20deg);animation:spin 6s linear infinite,grow var(--d) ease-in forwards;z-index:-1}
+.sus-spotlight .bx{background:#000;color:#000;box-shadow:0 0 0 6px var(--gold),0 0 60px 10px #f5aa1e99;animation:hover 1s ease-in-out infinite alternate}
+.sus-spotlight .bx::after{border-color:#f5aa1e55}
+.sus-spotlight .bx b{position:absolute;color:var(--gold);font-size:.8em;animation:qm .8s ease-in-out infinite alternate}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes grow{from{scale:.6;opacity:.3}to{scale:1.2;opacity:1}}
+@keyframes hover{to{transform:translateY(-14px) rotate(2deg)}}
+@keyframes qm{to{transform:scale(1.15)}}
+/* countdown: 3, 2, 1 slam in */
+.sus-countdown .num{position:fixed;inset:0;display:grid;place-items:center;font:900 min(40vw,52vh) Mulish,sans-serif;color:var(--orange);opacity:0;text-shadow:0 0 60px #f0502388}
+.sus-countdown .n1{animation:slam 1s ease-out .1s}
+.sus-countdown .n2{animation:slam 1s ease-out 1.1s;color:var(--gold)}
+.sus-countdown .n3{animation:slam 1s ease-out 2.1s;color:var(--teal)}
+@keyframes slam{0%{opacity:0;transform:scale(2.4)}15%{opacity:1;transform:scale(1)}80%{opacity:1;transform:scale(.92)}100%{opacity:0;transform:scale(.5)}}
+.sus-countdown .ring{position:fixed;width:min(70vw,70vh);aspect-ratio:1;border-radius:50%;border:6px solid #ffffff22;border-top-color:var(--orange);animation:spin .5s linear infinite}
+.sus-countdown .lab{position:fixed;bottom:12vh}
+/* your own clip */
+.sus-clip video{max-width:92vw;max-height:78vh;border-radius:14px;box-shadow:0 20px 60px #000c;background:#000}
+.sus-clip .bx{animation:hover 1s ease-in-out infinite alternate}
+.clipnote{margin-top:6px}
+@media (prefers-reduced-motion:reduce){.sus-countdown .n3{opacity:1}}
+.sus-media video{max-width:94vw;max-height:80vh;border-radius:14px;box-shadow:0 20px 60px #000c;background:#000}
+.fail{display:block;max-width:min(100%,360px);max-height:220px;border-radius:12px;margin:12px auto 0;background:#000}
+.ov.vid{background:#000;z-index:9;cursor:pointer}.ov.vid video{max-width:100vw;max-height:100vh}
+.endvid{display:block;width:min(100%,640px);border-radius:14px;margin:18px auto 0;box-shadow:0 20px 60px #000a;background:#000}
 </style>
 </head>
 <body>
@@ -369,6 +414,21 @@ window.BOX_BLAST_PACKS.push({
 <script>
 {
 const PACKS = window.BOX_BLAST_PACKS || [];
+/* themes: Classic uses the built-in reveals; other themes play video clips.
+   Clips are never stored in this repo: the teacher loads the folder once per computer and the browser keeps it.
+   A local copy can instead set window.BOX_BLAST_MEDIA with base: "clips/" to read clips sitting beside index.html. */
+const THEMES = {
+  classic: { name: "Classic" },
+  pokemon: { name: "Pokémon", intro: "media1.mp4", pick: ["media2.mp4", "media27.mp4"], end: "media40.mp4", wrong: [],
+    fx: {"bad":["media3.mp4","media6.mp4","media12.mp4","media15.mp4","media21.mp4","media28.mp4","media31.mp4"],"good":["media4.mp4","media5.mp4","media7.mp4","media11.mp4","media13.mp4","media14.mp4","media16.mp4","media17.mp4","media19.mp4","media20.mp4","media22.mp4","media23.mp4","media29.mp4","media30.mp4","media33.mp4","media39.mp4"],"steal":["media8.mp4","media25.mp4","media26.mp4"],"swap":["media9.mp4","media10.mp4"],"nuke":["media18.mp4","media37.mp4"],"gift":["media24.mp4"],"big":["media32.mp4","media35.mp4","media36.mp4","media38.mp4"],"bomb":["media34.mp4"]} }
+};
+if (window.BOX_BLAST_MEDIA) Object.assign(THEMES.pokemon, window.BOX_BLAST_MEDIA);
+const files = {};                                       // clip file name -> object URL from the loaded folder
+let MEDIA = null;
+const needed = t => [t.intro, ...(t.pick || []), t.end, ...(t.wrong || []), ...Object.values(t.fx || {}).flat()].filter(Boolean);
+const has = f => !!f && !!MEDIA && (MEDIA.base != null || !!files[f]);
+const mpath = f => MEDIA.base != null ? MEDIA.base + f : files[f] || "";
+function setTheme() { const t = THEMES[cfg.theme]; MEDIA = t && t.fx && (t.base != null || needed(t).some(f => files[f])) ? t : null; }
 const COLORS = ["#F05023","#009682","#F5AA1E","#5BA4E6","#C05BD6"];
 const FX = {
   p50:{k:"gain",t:"+50",d:"50 points. Better than nothing!"}, p100:{k:"gain",t:"+100",d:"100 points"},
@@ -398,7 +458,9 @@ const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { c
 const store = { get(k, d) { try { return JSON.parse(localStorage.getItem("boxblast:" + k)) ?? d; } catch { return d; } }, set(k, v) { try { localStorage.setItem("boxblast:" + k, JSON.stringify(v)); } catch {} } };
 
 const hashPack = decodeURIComponent(location.hash.slice(1));
-let cfg = Object.assign({ pack: PACKS[0]?.id, teams: 4, names: ["Team 1","Team 2","Team 3","Team 4","Team 5"], size: 20, mix: "classic", timer: 0, steal: true, topics: null, sound: true }, store.get("cfg", {}));
+let cfg = Object.assign({ pack: PACKS[0]?.id, teams: 4, names: ["Team 1","Team 2","Team 3","Team 4","Team 5"], size: 20, mix: "classic", timer: 0, steal: true, topics: null, sound: true, suspense: "random", start: 1000, theme: window.BOX_BLAST_MEDIA ? "pokemon" : "classic" }, store.get("cfg", {}));
+if (!THEMES[cfg.theme]) cfg.theme = "classic";
+setTheme();
 if (hashPack && PACKS.some(x => x.id === hashPack)) { cfg.pack = hashPack; cfg.topics = null; }
 if (!PACKS.some(x => x.id === cfg.pack)) cfg.pack = PACKS[0]?.id;
 /* ---------------- sound (synthesized, works offline) ---------------- */
@@ -430,6 +492,16 @@ const SFX = (() => {
     swap() { tone(300, 0, .35, "sine", .25, 1200); tone(1200, .3, .35, "sine", .25, 300); },
     tick() { tone(1500, 0, .05, "square", .08); },
     buzzer() { tone(110, 0, .7, "sawtooth", .25); tone(116, 0, .7, "sawtooth", .2); },
+    drumroll(d = 3.4) { // accelerating snare roll, then a crash
+      let t = 0, gap = .11, i = 0; while (t < d - .05) { noise(t, .06, .12 + .5 * (t / d), 5200); t += gap; gap = Math.max(.028, gap * .955); i++; }
+      noise(d, 1.6, .7, 9000); tone(82, d, .6, "sine", .5, 50); },
+    whoosh(d = 4) { // rising shimmer for the spotlight
+      tone(70, 0, d, "sawtooth", .07, 420); tone(105, 0, d, "sawtooth", .05, 630);
+      for (let i = 0; i < 14; i++) tone(1200 + i * 140, d * i / 16, .18, "sine", .05);
+      [523, 659, 784, 1047].forEach(f => tone(f, d, 1.1, "triangle", .16)); },
+    countdown() { // heartbeat ticks for 3-2-1, then a brass-style stinger
+      [0, 1, 2].forEach(k => { tone(62, .1 + k, .16, "sine", .6); tone(55, .32 + k, .16, "sine", .45); tone(1760, .1 + k, .06, "square", .06); });
+      [110, 164.8, 220, 277.2].forEach(f => { tone(f, 3.1, 1.4, "sawtooth", .09); tone(f * 1.006, 3.1, 1.4, "sawtooth", .07); }); },
     win() { [[523, 0], [523, .15], [523, .3], [784, .45], [659, .75], [784, .95], [1047, 1.15]].forEach(([f, t]) => tone(f, t, .35, "triangle", .25)); }
   };
   return n => { if (cfg.sound !== false) try { S[n] && S[n](); } catch {} };
@@ -477,12 +549,19 @@ function renderSetup() {
       <div class="box"><h3>Teams</h3>${seg("teams", [2,3,4,5])}
         <div class="teams">${Array.from({ length: cfg.teams }, (_, i) => `<label><span class="sw" style="background:${COLORS[i]}"></span><input type="text" data-name="${i}" value="${esc(cfg.names[i])}" aria-label="Team ${i + 1} name"></label>`).join("")}</div>
       </div>
+      <div class="box"><h3>Theme</h3>${seg("theme", Object.keys(THEMES), v => THEMES[v].name)}
+        ${themeNote()}</div>
       <div class="box"><h3>Board size</h3>${seg("size", [12,16,20,25,30])}
         <h3 style="margin-top:16px">Box mix</h3>${seg("mix", ["calm","classic","chaos"], v => v[0].toUpperCase() + v.slice(1))}
         <p class="note">Calm: mostly points, few losses. Classic: points from +50 to +1000, bombs, swaps, Robin Hood, double or nothing, shields, mystery boxes. Chaos: more of the wild ones, plus ×5 and −500. Every board is dealt fresh.</p></div>
       <div class="box"><h3>Timer</h3>${seg("timer", [0,30,45,60,90], v => v ? v + "s" : "Off")}
         <h3 style="margin-top:16px">Wrong answer</h3>${seg("steal", [true,false], v => v ? "Next team can steal" : "Turn passes")}
         <h3 style="margin-top:16px">Sound effects</h3>${seg("sound", [true,false], v => v ? "On" : "Off")}
+        <h3 style="margin-top:16px">Box reveal</h3>${MEDIA ? `<p class="note">The ${esc(MEDIA.name)} theme plays a clip before every box. Switch to Classic for the drumroll, spotlight and countdown reveals.</p>` : seg("suspense", ["random","drumroll","spotlight","countdown","clip","off"], v => ({ random: "Surprise me", drumroll: "Drumroll", spotlight: "Spotlight", countdown: "Countdown", clip: "Your own clip", off: "Instant" })[v])}
+        ${MEDIA ? "" : `<div class="seg clipnote"><button type="button" class="btn alt" id="clipb">${clipURL ? "Change clip" : "Load a clip (video or audio)"}</button>${clipURL ? `<button type="button" class="btn alt" id="clipx">Remove</button>` : ""}</div>
+        <input type="file" id="clipf" accept="video/*,audio/*" hidden>
+        <p class="note">${clipURL ? `Loaded: ${esc(clipName)}. It plays before each box opens (click to skip). Stays in this browser.` : "Suspense before each box opens. Load your own short intro clip from your computer to use “Your own clip”. Only use clips you have the right to show."}</p>`}
+        <h3 style="margin-top:16px">Starting points</h3>${seg("start", [0, 500, 1000])}
         <h3 style="margin-top:16px">Your own pack</h3>
         <div class="seg"><button type="button" class="btn alt" id="ld">Load pack (.json)</button><button type="button" class="btn alt" id="tpl">Pack template</button></div>
         <input type="file" id="file" accept=".json,application/json" hidden>
@@ -504,17 +583,29 @@ function renderSetup() {
         <li><b>Skip question</b> swaps a question you don't want for a new one before anyone answers.</li>
         <li>The game saves itself. If the page closes, open it again on the same computer and press <b>Resume game</b>.</li>
         <li>If you run out of questions, the pack reshuffles and repeats.</li>
+        <li><b>Box reveal</b> adds suspense before each box opens: a drumroll, a spotlight, a 3-2-1 countdown, or your own short clip loaded from your computer. Click or press <kbd>Space</kbd> to skip it.</li>
       </ul></details>
     <div id="tplbox"></div>
   </div>
   <div class="foot"><span class="dots"><i></i><i></i><i></i></span>Wellspring International Bilingual Schools · Social Sciences</div>`;
-  app.querySelectorAll("[data-set]").forEach(b => b.onclick = () => { const v = b.dataset.v; cfg[b.dataset.set] = v === "true" ? true : v === "false" ? false : isNaN(v) ? v : +v; save(); renderSetup(); });
+  app.querySelectorAll("[data-set]").forEach(b => b.onclick = () => { const v = b.dataset.v; cfg[b.dataset.set] = v === "true" ? true : v === "false" ? false : isNaN(v) ? v : +v; save(); setTheme(); renderSetup(); });
+  const tf = app.querySelector("#themef"), tb = app.querySelector("#themeb"), tx = app.querySelector("#themex");
+  if (tb) tb.onclick = () => tf.click();
+  if (tf) tf.onchange = async () => { const want = new Set(needed(THEMES[cfg.theme])), got = [...tf.files].filter(f => want.has(f.name));
+    const msg = app.querySelector("#thmsg"); if (!got.length) { msg.textContent = "No matching clips in that folder. Choose the clips folder from the zip."; return; }
+    msg.textContent = "Saving " + got.length + " clips…"; got.forEach(f => { if (files[f.name]) URL.revokeObjectURL(files[f.name]); files[f.name] = URL.createObjectURL(f); });
+    await mediaDB("put", got); setTheme(); renderSetup(); };
+  if (tx) tx.onclick = async () => { Object.keys(files).forEach(k => { URL.revokeObjectURL(files[k]); delete files[k]; }); await mediaDB("clear"); setTheme(); renderSetup(); };
   app.querySelector("#pk").onchange = e => { cfg.pack = e.target.value; cfg.topics = null; save(); try { history.replaceState(null, "", "#" + cfg.pack); } catch {} renderSetup(); };
   app.querySelectorAll("[data-topic]").forEach(c => c.onchange = () => { cfg.topics = [...app.querySelectorAll("[data-topic]:checked")].map(x => x.dataset.topic); cfg.topicsPack = cfg.pack; save(); renderSetup(); });
   app.querySelectorAll("[data-name]").forEach(inp => inp.oninput = () => { cfg.names[+inp.dataset.name] = inp.value; save(); });
   app.querySelector("#go").onclick = () => startGame(sel);
-  const rs = app.querySelector("#resume"); if (rs) rs.onclick = () => { S = saved.S; hist = saved.hist || []; if (S.phase === "question" && S.cur) S.cur.started = Date.now(); render(); };
+  const rs = app.querySelector("#resume"); if (rs) rs.onclick = () => { S = saved.S; hist = saved.hist || []; if (S.phase === "question" && S.cur) S.cur.started = Date.now(); if (S.phase === "suspense") S.phase = "reveal"; S.intro = false; render(); };
   const dc = app.querySelector("#discard"); if (dc) dc.onclick = () => { store.set("game", null); renderSetup(); };
+  const clipf = app.querySelector("#clipf");
+  const cb = app.querySelector("#clipb"); if (cb) cb.onclick = () => clipf.click();
+  if (clipf) clipf.onchange = async () => { const f = clipf.files[0]; if (!f) return; setClip(f); cfg.suspense = "clip"; save(); renderSetup(); await clipDB("put", f); };
+  const cx = app.querySelector("#clipx"); if (cx) cx.onclick = async () => { setClip(null); if (cfg.suspense === "clip") cfg.suspense = "random"; save(); renderSetup(); await clipDB("del"); };
   const file = app.querySelector("#file");
   app.querySelector("#ld").onclick = () => file.click();
   file.onchange = async () => {
@@ -536,14 +627,22 @@ function renderSetup() {
     app.querySelector("#cp").onclick = async e => { try { await navigator.clipboard.writeText(t); e.target.textContent = "Copied"; } catch { app.querySelector("#tplbox textarea").select(); } };
   };
 }
+function themeNote() {
+  const t = THEMES[cfg.theme]; if (!t.fx) return `<p class="note">Built-in sounds and reveals. Works anywhere, no files needed.</p>`;
+  if (t.base != null) return `<p class="note">Clips load from the folder beside this page.</p>`;
+  const all = needed(t), n = all.filter(f => files[f]).length;
+  return `<div class="seg clipnote"><button type="button" class="btn ${n ? "alt" : ""}" id="themeb">${n ? "Reload" : "Load"} ${esc(t.name)} clips</button>${n ? `<button type="button" class="btn alt" id="themex">Remove clips</button>` : ""}</div>
+    <input type="file" id="themef" webkitdirectory multiple hidden>
+    <p class="note" id="thmsg">${n ? `${n} of ${all.length} clips loaded on this computer.` : `Press Load and choose the <b>clips</b> folder (from the zip). You only do this once on each computer: the browser keeps them. Until then, Classic reveals are used.`}</p>`;
+}
 function save() { store.set("cfg", { ...cfg }); }
 
 /* ---------------- game ---------------- */
 function startGame(topics) {
   const p = pack();
   const qs = shuffle(p.questions.filter(q => topics.includes(q.topic || "General")));
-  S = { title: p.title, teams: Array.from({ length: cfg.teams }, (_, i) => ({ name: cfg.names[i] || "Team " + (i + 1), score: 0, last: "", c: COLORS[i] })),
-        boxes: makeBoxes(cfg.size, cfg.mix), pool: qs, qi: 0, turn: 0, phase: "ready", cur: null, asked: 0, recycled: false, timer: cfg.timer, steal: cfg.steal, cols: cols(cfg.size), mix: cfg.mix, rules: true };
+  S = { title: p.title, teams: Array.from({ length: cfg.teams }, (_, i) => ({ name: cfg.names[i] || "Team " + (i + 1), score: +cfg.start || 0, last: "", c: COLORS[i] })),
+        boxes: makeBoxes(cfg.size, cfg.mix), pool: qs, qi: 0, turn: 0, phase: "ready", cur: null, asked: 0, recycled: false, timer: cfg.timer, steal: cfg.steal, cols: cols(cfg.size), mix: cfg.mix, rules: true, intro: has(MEDIA?.intro) };
   hist = []; render();
 }
 function cols(n) { return n <= 12 ? 4 : n <= 20 ? (n === 16 ? 4 : 5) : n <= 25 ? 5 : 6; }
@@ -565,13 +664,14 @@ function ask() {
 }
 function judge(ok) {
   snap();
-  const c = S.cur; c.correct = ok; c.revealed = true; SFX(ok ? "correct" : "wrong");
+  const c = S.cur; c.correct = ok; c.revealed = true; if (!ok) c.fail = pickFail(); SFX(ok ? "correct" : "wrong");
   render();
 }
 function choose(i) {
   const c = S.cur; if (c.revealed || c.chosen.includes(i)) return;
-  snap(); c.chosen.push(i); c.revealed = true; c.correct = i === c.q.a; SFX(c.correct ? "correct" : "wrong"); render();
+  snap(); c.chosen.push(i); c.revealed = true; c.correct = i === c.q.a; if (!c.correct) c.fail = pickFail(); SFX(c.correct ? "correct" : "wrong"); render();
 }
+function pickFail() { const w = (MEDIA?.wrong || []).filter(has); return w?.length ? w[Math.random() * w.length | 0] : null; }
 function stealTry() {
   snap();
   const c = S.cur; c.stealing = true; c.answering = (c.team + 1) % S.teams.length; c.revealed = false; c.correct = null; c.started = Date.now(); render();
@@ -587,7 +687,49 @@ function openBox(i) {
   if (TARGETED.includes(b.res) && S.teams.length > 1) { S.phase = "target"; render(); return; }
   resolve(b, t, null);
 }
-function resolve(b, t, target) { apply(b.res, t, target); setTimeout(() => SFX(fxSound(b.res, S.cur)), 450); S.phase = "reveal"; render(); }
+const SUS = { drumroll: 3.4, spotlight: 4, countdown: 3.2 };
+let clipURL = null, clipName = "", susT = null;
+function resolve(b, t, target) {
+  apply(b.res, t, target);
+  let st = cfg.suspense || "off";
+  if (st === "random") st = Object.keys(SUS)[Math.random() * 3 | 0];
+  if (st === "clip" && !clipURL) st = "drumroll";
+  if (MEDIA) { const f = mediaFor(b.res, S.cur); if (f) { S.cur.clip = f; st = "media"; } }
+  if (st === "off") { setTimeout(() => SFX(fxSound(b.res, S.cur)), 450); S.phase = "reveal"; }
+  else { S.cur.sus = st; S.phase = "suspense"; }
+  render();
+}
+/* which clip pool fits each box; a shuffle bag per pool so clips don't repeat until all have played */
+const POOL = { p50: "good", p100: "good", p150: "good", p200: "good", p250: "good", p300: "good", p400: "good", shield: "good", extra: "good",
+  p500: "big", p1000: "big", x2: "big", x3: "big", x5: "big", party: "big", m100: "bad", m300: "bad", m500: "bad", half: "bad", topcut: "bad",
+  bomb: "bomb", nuke: "nuke", swap: "swap", steal: "steal", robin: "steal", gift: "gift" };
+const FALLBACK = { bomb: ["bomb", "nuke", "bad"], nuke: ["nuke", "bomb", "bad"], big: ["big", "good"], swap: ["swap", "steal", "good"], steal: ["steal", "swap", "good"], gift: ["gift", "swap", "bad"], good: ["good", "big"], bad: ["bad", "bomb"] };
+const bags = {};
+function mediaFor(fx, c) {
+  const key = fx === "dbl" ? (c.flip ? "big" : "bad") : POOL[fx] || "good";
+  for (const k of FALLBACK[key] || [key]) { const pool = (MEDIA.fx?.[k] || []).filter(has); if (pool.length) { if (!bags[k]?.length) bags[k] = shuffle(pool); return bags[k].pop(); } }
+  return null;
+}
+function endSuspense() {
+  if (!S || S.phase !== "suspense") return;
+  clearTimeout(susT); S.phase = "reveal"; SFX(fxSound(S.cur.res, S.cur)); render();
+}
+/* own clip: kept in this browser (IndexedDB) so it survives a refresh */
+const idb = () => new Promise(res => { try { const r = indexedDB.open("boxblast", 2);
+  r.onupgradeneeded = () => ["clip", "media"].forEach(n => { if (!r.result.objectStoreNames.contains(n)) r.result.createObjectStore(n); });
+  r.onsuccess = () => res(r.result); r.onerror = () => res(null); } catch { res(null); } });
+const clipDB = async (mode, val) => { const d = await idb(); if (!d) return null; return new Promise(res => { try {
+  const tx = d.transaction("clip", mode ? "readwrite" : "readonly"), os = tx.objectStore("clip");
+  if (mode === "put") { os.put(val, "c"); tx.oncomplete = () => res(true); } else if (mode === "del") { os.delete("c"); tx.oncomplete = () => res(true); }
+  else { const g = os.get("c"); g.onsuccess = () => res(g.result || null); g.onerror = () => res(null); } } catch { res(null); } }); };
+const mediaDB = async (mode, list) => { const d = await idb(); if (!d) return null; return new Promise(res => { try {
+  const tx = d.transaction("media", mode ? "readwrite" : "readonly"), os = tx.objectStore("media");
+  if (mode === "put") list.forEach(f => os.put(f, f.name)); else if (mode === "clear") os.clear();
+  else { const k = os.getAllKeys(), v = os.getAll(); tx.oncomplete = () => res(k.result.map((n, i) => [n, v.result[i]])); tx.onerror = () => res([]); return; }
+  tx.oncomplete = () => res(true); tx.onerror = () => res(null); } catch { res(null); } }); };
+mediaDB().then(list => { if (!list?.length) return; list.forEach(([n, f]) => { files[n] = URL.createObjectURL(f); }); setTheme(); if (!S) renderSetup(); });
+function setClip(file) { if (clipURL) URL.revokeObjectURL(clipURL); clipURL = file ? URL.createObjectURL(file) : null; clipName = file ? file.name || "your clip" : ""; }
+clipDB().then(f => { if (f) { setClip(f); if (!S) renderSetup(); } });
 const lead = (ex = -1) => S.teams.reduce((m, x, i) => i !== ex && (m < 0 || x.score > S.teams[m].score) ? i : m, -1);
 function apply(fx, t, target) {
   const c = S.cur, T = S.teams, me = T.indexOf(t), lines = [], before = T.map(x => x.score);
@@ -628,9 +770,16 @@ function afterReveal() {
 function finish() { clearInterval(tick); S.phase = "end"; SFX("win"); render(); }
 
 /* ---------------- render ---------------- */
+let music = null;
+function pickMusic(on) {
+  const pk = (MEDIA?.pick || []).filter(has); if (!pk.length) { if (music) { music.pause(); music = null; } return; }
+  if (!on || cfg.sound === false) { if (music) { music.pause(); music = null; } return; }
+  if (music) return;
+  music = new Audio(mpath(pk[Math.random() * pk.length | 0])); music.loop = true; music.volume = .7; music.play().catch(() => {});
+}
 function persist() { if (!S) return; store.set("game", S.phase === "end" ? null : { S, hist: hist.slice(-25) }); }
 function render() {
-  clearInterval(tick); persist();
+  clearInterval(tick); clearTimeout(susT); persist();
   if (!S) return renderSetup();
   if (S.phase === "end") return renderEnd();
   const c = S.cur, act = c ? c.answering : S.turn;
@@ -675,6 +824,7 @@ function rulesCard() {
   </div></div>`;
 }
 function overlay() {
+  if (S.intro) return `<div class="ov vid" id="introv"><video id="iv" src="${esc(mpath(MEDIA.intro))}" autoplay playsinline></video><span class="skip" style="position:fixed;right:18px;bottom:16px;color:#ffffff88;font-size:14px">Click or press Space to skip</span></div>`;
   if (S.rules) return rulesCard();
   const c = S.cur;
   if (S.phase === "question") {
@@ -687,6 +837,7 @@ function overlay() {
       if (c.revealed) {
         const showAns = c.correct || !canSteal();
         body += `<div class="ex ${c.correct ? "" : "bad"}"><strong>${c.correct ? "Correct!" : "Not quite."}</strong> ${showAns ? esc(q.e || "") : c.stealing ? "" : "Steal chance for the next team?"}</div>`;
+        if (c.correct === false && c.fail) body += `<video class="fail" src="${esc(mpath(c.fail))}" autoplay loop muted playsinline></video>`;
       }
     } else {
       body = c.revealed || c.shown ? `<div class="ex"><strong>Model answer</strong><div class="model">${esc(q.model)}</div></div>` : `<p class="note" style="color:#5a6b7a">Teams answer out loud or on whiteboards. Reveal the model answer, then mark it.</p>`;
@@ -709,6 +860,14 @@ function overlay() {
     return `<div class="ov"><div class="card fx" style="--c:${t.c}">${c.mystery ? `<p>Mystery box turns into…</p>` : ""}<div class="big"><span class="k-${f.k}">${f.t}</span></div><p>${esc(f.d)}. ${esc(t.name)}, choose a team:</p>
       <div class="pick">${S.teams.map((x, j) => j === c.answering ? "" : `<button data-tg="${j}" style="--c:${x.c}">${esc(x.name)}${x.shield ? " · shield" : ""}<span>${x.score}</span></button>`).join("")}</div></div></div>`;
   }
+  if (S.phase === "suspense") {
+    const t = S.teams[c.answering], b = S.boxes[c.box], st = c.sus, d = SUS[st] || 4;
+    const lab = { drumroll: "Drumroll please…", spotlight: "What's in the box?", countdown: "Revealing in…", clip: "What's in the box?" }[st];
+    const inner = st === "countdown" ? `<div class="ring"></div><div class="num n1">3</div><div class="num n2">2</div><div class="num n3">1</div><div class="lab">${lab}</div>`
+      : st === "clip" || st === "media" ? `<div class="stage"><video id="clipv" src="${st === "media" ? esc(mpath(c.clip)) : clipURL}" autoplay playsinline></video><div class="who2">${esc(t.name)} · Box ${b.n}</div></div>`
+      : `${st === "spotlight" ? `<div class="beam l"></div><div class="beam r"></div>` : ""}<div class="stage">${st === "spotlight" ? `<div class="rays"></div>` : ""}<div class="lab">${lab}</div><div class="bx">${st === "spotlight" ? "<b>?</b>" : b.n}</div><div class="who2">${esc(t.name)} · Box ${b.n}</div></div>`;
+    return `<div class="ov sus sus-${st}" id="sus" style="--c:${t.c};--d:${d}s" role="dialog" aria-label="Box ${b.n} is being revealed">${inner}<span class="skip">Click or press Space to reveal now</span></div>`;
+  }
   if (S.phase === "reveal") {
     const t = S.teams[c.answering], b = S.boxes[c.box], f = FX[b.res];
     const bad = ["bomb","nuke"].includes(b.res) || (b.res === "dbl" && !c.flip);
@@ -727,6 +886,8 @@ function bind() {
   const $ = s => app.querySelector(s), on = (s, f) => { const e = $(s); if (e) e.onclick = f; };
   on("#undo", undo); on("#rulesb", () => { S.rules = true; render(); }); on("#play", () => { S.rules = false; render(); }); on("#snd", () => { cfg.sound = cfg.sound === false; save(); render(); }); on("#endg", () => { snap(); finish(); });
   on("#askb", ask);
+  if (S.intro) { const endIntro = () => { if (!S.intro) return; S.intro = false; render(); }; on("#introv", endIntro); const iv = $("#iv"); if (iv) { iv.muted = cfg.sound === false; iv.onended = endIntro; iv.onerror = endIntro; iv.play?.().catch(() => {}); } }
+  pickMusic(S.phase === "pick" && !S.rules && !S.intro);
   app.querySelectorAll("[data-opt]").forEach(b => b.onclick = () => choose(+b.dataset.opt));
   app.querySelectorAll("[data-box]").forEach(b => b.onclick = () => openBox(+b.dataset.box));
   app.querySelectorAll("[data-tg]").forEach(b => b.onclick = () => chooseTarget(+b.dataset.tg));
@@ -737,6 +898,12 @@ function bind() {
   on("#pass", () => advance(S.cur.team)); on("#next", () => advance(S.cur.team));
   on("#skip", () => { snap(); S.cur.q = nextQ(); S.cur.started = Date.now(); render(); });
   on("#cont", afterReveal);
+  if (S.phase === "suspense") {
+    on("#sus", endSuspense);
+    const st = S.cur.sus, v = $("#clipv");
+    if ((st === "clip" || st === "media") && v) { v.muted = cfg.sound === false; v.onended = endSuspense; v.onerror = () => { susT = setTimeout(endSuspense, 600); }; v.play?.().catch(() => {}); susT = setTimeout(endSuspense, 60000); }
+    else { SFX(st === "spotlight" ? "whoosh" : st); susT = setTimeout(endSuspense, (SUS[st] + .35) * 1000); }
+  }
   const tm = $("#tm");
   if (tm) { const upd = () => { const r = Math.max(0, S.timer - Math.floor((Date.now() - S.cur.started) / 1000)); tm.textContent = r ? r + "s" : "Time!"; tm.classList.toggle("low", r <= 5);
       if (r !== S.cur.lastTick) { if (r > 0 && r <= 5) SFX("tick"); if (r === 0 && S.cur.lastTick !== undefined) SFX("buzzer"); S.cur.lastTick = r; }
@@ -744,9 +911,11 @@ function bind() {
   if (S.phase === "pick") $(".banner")?.scrollIntoView({ block: "nearest" });
 }
 function renderEnd() {
+  pickMusic(false);
   const r = S.teams.map(t => t).sort((a, b) => b.score - a.score);
   app.innerHTML = `<div class="end"><span class="dots"><i></i><i></i><i></i></span><h1><span>${esc(r[0].name)}</span> wins!</h1>
     <div class="podium">${r.map((t, i) => `<div style="--c:${t.c}"><span class="r">${i + 1}</span><span class="nm">${esc(t.name)}</span><span class="sc">${t.score}</span></div>`).join("")}</div>
+    ${has(MEDIA?.end) ? `<video class="endvid" src="${esc(mpath(MEDIA.end))}" autoplay playsinline ${cfg.sound === false ? "muted" : ""}></video>` : ""}
     <p class="note">${S.asked} questions asked · ${S.boxes.filter(b => b.open).length} boxes opened</p>
     <div class="acts" style="justify-content:center"><button class="btn alt" id="undo2" ${hist.length ? "" : "disabled"}>Back to the board</button><button class="btn alt" id="setup">New game setup</button><button class="btn" id="again">Play again, same settings</button></div></div>`;
   app.querySelector("#undo2").onclick = undo;
@@ -759,6 +928,8 @@ document.addEventListener("keydown", e => {
   const k = e.key.toLowerCase();
   if (k === "u") return undo();
   if (S.phase === "question" && "abcd".includes(k) && k.length === 1) { const b = app.querySelector(`[data-opt="${"abcd".indexOf(k)}"]`); if (b && !b.disabled) b.click(); return; }
+  if (S.phase === "suspense" && (k === " " || k === "enter")) { e.preventDefault(); return endSuspense(); }
+  if (S.intro && (k === " " || k === "enter")) { e.preventDefault(); S.intro = false; return render(); }
   if (k === " " || k === "enter") {
     const b = app.querySelector("#play,#askb,#topick,#cont,#next,#show");
     if (b) { e.preventDefault(); b.click(); }
